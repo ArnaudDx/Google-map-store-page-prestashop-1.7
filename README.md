@@ -1,1 +1,1 @@
-# Google-map-store-page
+# Show your store on a google map
