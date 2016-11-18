@@ -7,7 +7,7 @@
 <li>Upload the storeggmap folder by ftp on your "modules" folder</li>
 <li>Install the module in back office</li>
 <li>Fill the Google Map API key input</li>
-<li>Paste this code : <strong>{widget name="storeggmap" hook='displaystoreMap'}</strong> in your themes/{yourtheme}/templates/cms/stores.tpl</li>
+<li>Paste this code : <strong>{widget name="storeggmap"}</strong> in your themes/{yourtheme}/templates/cms/stores.tpl</li>
 </ol>
 
 <h2>Contributing</h2>
