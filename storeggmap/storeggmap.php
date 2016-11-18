@@ -39,7 +39,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->name = 'storeggmap';
         $this->author = 'ArnaudDx';
-        $this->version = '1.1.5';
+        $this->version = '1.1.6';
         $this->need_instance = 0;
 
         $this->bootstrap = true;
@@ -55,35 +55,15 @@ class Storeggmap extends Module implements WidgetInterface
 
     public function install()
     {
-        return  parent::install() &&
-        $this->registerHook('displayHeader') &&
-        $this->registerHook('displaystoreMap') &&
-        $this->storeMapHook(1);
+        return parent::install() &&
+        $this->registerHook('displayHeader');
     }
 
     public function uninstall()
     {
-        return $this->storeMapHook() &&
-        Configuration::deleteByName('STORE_GGMAP_APIKEY') &&
+        return Configuration::deleteByName('STORE_GGMAP_APIKEY') &&
         parent::uninstall();
         
-    }
-
-    public function storeMapHook($add = null)
-    {
-        if ($add) {
-            return Db::getInstance()->insert('hook_alias', array(
-                                            'alias' => 'storeMap',
-                                            'name' => 'displaystoreMap',
-                                        ));
-        } else {
-            if (Db::getInstance()->delete('hook_alias', 'alias = "storeMap" 
-                                                AND name = "displaystoreMap"', 1) &&
-                Db::getInstance()->delete('hook', 'name = "displaystoreMap"', 1)) {
-                    return true;
-                };
-            
-        }
     }
     
     public function getContent()
@@ -141,7 +121,7 @@ class Storeggmap extends Module implements WidgetInterface
             'input' => array(
                 'content' => array(
                     'type' => 'text',
-                    'label' => $this->trans('Google Map Api', array()),
+                    'label' => $this->trans('Google Map Api', array(), 'Modules.storeggmap'),
                     'name' => 'ggmap_apikey',
                     'cols' => 40,
                     'rows' => 10,
@@ -234,8 +214,7 @@ class Storeggmap extends Module implements WidgetInterface
         if ('stores' == $this->context->controller->php_self && $stores && $apikey) {
             $this->context->controller->registerStylesheet('modules-ggmap', 'modules/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
             // TODO 
-            // Trouver comment appeler l'url externe
-            // sans passer par la balise script dans le tpl
+            // Comment appeler cette url en externe?
             // $this->context->controller->registerJavascript('modules-initmap', 'https://maps.googleapis.com/maps/api/js?key='.$apikey.'&callback=initMap', ['position' => 'bottom', 'priority' => 100, 'inline' => true, 'attribute' => 'async']);
             $this->context->controller->registerJavascript('modules-ggmap', 'modules/'.$this->name.'/views/js/ggmap.js', ['position' => 'bottom', 'priority' => 150]); 
             Media::addJsDef(array(
