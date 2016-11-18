@@ -209,19 +209,23 @@ class Storeggmap extends Module implements WidgetInterface
     
     public function hookdisplayHeader($params)
     {
-        $stores = Store::getStores();
-        $apikey = Configuration::get('STORE_GGMAP_APIKEY');
-        if ('stores' == $this->context->controller->php_self && $stores && $apikey) {
-            $this->context->controller->registerStylesheet('modules-ggmap', 'modules/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
-            // TODO 
-            // Comment appeler cette url en externe?
-            // $this->context->controller->registerJavascript('modules-initmap', 'https://maps.googleapis.com/maps/api/js?key='.$apikey.'&callback=initMap', ['position' => 'bottom', 'priority' => 100, 'inline' => true, 'attribute' => 'async']);
-            $this->context->controller->registerJavascript('modules-ggmap', 'modules/'.$this->name.'/views/js/ggmap.js', ['position' => 'bottom', 'priority' => 150]); 
-            Media::addJsDef(array(
-                'storeArrayContent' => $this->JsStoreList($stores),
-                'defaultLat' => $this->defaultLatLng(),
-                'defaultLong' => $this->defaultLatLng(1),
-            ));
+
+        if ('stores' == $this->context->controller->php_self) {
+            $stores = Store::getStores();
+            $apikey = Configuration::get('STORE_GGMAP_APIKEY');
+            
+            if($stores && $apikey) {                
+                $this->context->controller->registerStylesheet('modules-ggmap', 'modules/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
+                // TODO 
+                // Comment appeler cette url en externe?
+                // $this->context->controller->registerJavascript('modules-initmap', 'https://maps.googleapis.com/maps/api/js?key='.$apikey.'&callback=initMap', ['position' => 'bottom', 'priority' => 100, 'inline' => true, 'attribute' => 'async']);
+                $this->context->controller->registerJavascript('modules-ggmap', 'modules/'.$this->name.'/views/js/ggmap.js', ['position' => 'bottom', 'priority' => 150]); 
+                Media::addJsDef(array(
+                    'storeArrayContent' => $this->JsStoreList($stores),
+                    'defaultLat' => $this->defaultLatLng(),
+                    'defaultLong' => $this->defaultLatLng(1),
+                ));
+            }
         }
     }
 
