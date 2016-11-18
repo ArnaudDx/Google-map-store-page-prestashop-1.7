@@ -40,8 +40,6 @@ class Storeggmap extends Module implements WidgetInterface
         $this->name = 'storeggmap';
         $this->author = 'ArnaudDx';
         $this->version = '1.1.5';
-        // API key
-        // AIzaSyCdcOZKNQK3fN6Y2cjbxYrRD0oCqjGmvhI
         $this->need_instance = 0;
 
         $this->bootstrap = true;
