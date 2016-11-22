@@ -1,7 +1,9 @@
 var map;
+var infowindow = null;
 
 function initMap() {
-    map = new google.maps.Map(document.getElementById('map-style'), {
+    
+    map = new google.maps.Map(document.getElementById('storemap'), {
         center: {lat: parseFloat(defaultLat), lng: parseFloat(defaultLong)},
         disableDefaultUI:true,
         fullscreenControl:true,
@@ -9,20 +11,63 @@ function initMap() {
         zoom: 5
     });
     
-    // Transforme String en Array
-    var storeList = (new Function("return [" + storeArrayContent+ "];")());
-    
-    for (store of storeList) {
-        createMarker(map, store.name, store.latitude, store.longitude);
-    }
+    $.ajax({
+        method: 'POST',
+        url: storeGGmapCall,
+        data: { 
+            allStores: 1,
+            id_lang: id_lang,
+        },
+        dataType: 'json',
+        success: function(json) {
+            for (store of json.storeList) {
+                createMarker(map, store);
+            }
+        }
+    })
 }
 
-function createMarker(theMap, name, Lat, Long) {
+function createMarker(theMap, theStore) {
     var marker = new google.maps.Marker({
-        position: {lat: Lat, lng: Long},
-        title:"name: "+name
+        position: {lat: theStore.latitude, lng: theStore.longitude},
+        title: theStore.name,
     });
+    
+    marker.addListener('click', function() {
+        if (infowindow) {
+            infowindow.close();
+        }
+        infowindow = new google.maps.InfoWindow({
+            content: infosHtml(theStore),
+            maxWidth : 350,
+        });
+        infowindow.open(theMap, marker);
+    });
+    
     marker.setMap(theMap);
+}
+
+function infosHtml(store){
+    var storeHtml = '<div id="store_infos">';
+    storeHtml += '<p><b>' + store.name + '</b></p>';
+    storeHtml += '<p>' + store.address1 + (store.address2 ? '<br />' + store.address2 : '') + '<br/>' + store.city + ', ' + (store.postcode ? store.postcode : '');
+    storeHtml += '<br/>' + store.country + (store.state ? ', ' + store.state : '') + '</p>';
+    if ( store.phone || store.fax) {
+        storeHtml += '<p> Phone : ' + (store.phone ? store.phone : ' -') + '<br />Fax : ' + (store.fax ? store.fax : ' -') + '</p><hr/>';
+    }
+    if (store.note) {
+        storeHtml += '<p> Note : ' + store.note + '</p><hr/>';
+    }
+    if (store.hours) {
+        storeHtml += '<ul>';
+        storeHtml += '<li>Our Hours :</li>';
+        for (hours of store.hours) {
+            storeHtml += '<li>' + hours + '</li>';
+        }
+        storeHtml += '</ul>';
+    }
+    storeHtml += '</div>';
+    return storeHtml;
 }
 
 $(document).ready(function(){
