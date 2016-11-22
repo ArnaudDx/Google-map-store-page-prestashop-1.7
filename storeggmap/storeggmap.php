@@ -39,7 +39,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->name = 'storeggmap';
         $this->author = 'ArnaudDx';
-        $this->version = '1.1.9';
+        $this->version = '1.2.9';
         $this->need_instance = 0;
 
         $this->bootstrap = true;
@@ -62,6 +62,7 @@ class Storeggmap extends Module implements WidgetInterface
     public function uninstall()
     {
         return Configuration::deleteByName('STORE_GGMAP_APIKEY') &&
+        Configuration::deleteByName('STORE_GGMAP_ICON') &&
         parent::uninstall();
         
     }
@@ -69,12 +70,45 @@ class Storeggmap extends Module implements WidgetInterface
     public function getContent()
     {
         $output = '';
+        $url_path = dirname(__FILE__).'/views/img/';
 
-        if (Tools::isSubmit('save_storemap')) {
+        if (Tools::isSubmit('delicon')) {
+            $imageName = Configuration::get('STORE_GGMAP_ICON');
+            if (unlink($url_path.$imageName)) {
+                Configuration::updateValue('STORE_GGMAP_ICON', null);
+                $this->_clearCache($this->templateFile);
+                $output .= $this->displayConfirmation($this->trans('Icon deleted', array(), 'Admin.Notifications.Error'));
+            } else {
+                $output .= $this->displayError($this->trans('Error while icon deletion.', array(), 'Admin.Notifications.Error'));
+            }
+        } elseif (Tools::isSubmit('save_storemap')) {
             if (!Tools::getValue('ggmap_apikey')) {
-                $output = $this->displayError($this->trans('Please fill out all fields.', array(), 'Admin.Notifications.Error')) . $this->renderForm();
+                $output .= $this->displayError($this->trans('Please fill out all fields.', array(), 'Admin.Notifications.Error'));
             } else {
                 Configuration::updateValue('STORE_GGMAP_APIKEY', Tools::getValue('ggmap_apikey'));
+                if (isset($_FILES['ggmap_icon']['name']) && !empty($_FILES['ggmap_icon']['name'])) {
+                    Configuration::updateValue('STORE_GGMAP_ICON', $_FILES['ggmap_icon']['name']);
+                    
+                    if (isset($_FILES['ggmap_icon']) && $_FILES['ggmap_icon']) {
+                        $tmp_name = $_FILES['ggmap_icon']['tmp_name'];
+                        $name = $_FILES['ggmap_icon']['name'];
+                        $type = Tools::strtolower(Tools::substr(strrchr($_FILES['ggmap_icon']['name'], '.'), 1));
+                        $imagesize = @getimagesize($_FILES['ggmap_icon']['tmp_name']);
+                        if (in_array( 
+                            Tools::strtolower(Tools::substr(strrchr($imagesize['mime'], '/'), 1)), array(
+                                'jpg',
+                                'gif',
+                                'jpeg',
+                                'png'
+                            )) &&
+                        in_array($type, array('jpg', 'gif', 'jpeg', 'png'))) {
+                            move_uploaded_file($tmp_name, $url_path.$name);
+                            $output .= $this->displayConfirmation($this->trans('Icon added', array(), 'Admin.Notifications.Error'));
+                        } else {
+                            $output .= $this->displayError($this->trans('Image format error.', array(), 'Admin.Notifications.Error'));
+                        }
+                    }
+                }
 
                 $this->_clearCache($this->templateFile);
             }
@@ -83,35 +117,16 @@ class Storeggmap extends Module implements WidgetInterface
         return $output.$this->renderForm();
     }
 
-    public function processSaveCustomText()
-    {
-        $info = new CustomText(Tools::getValue('id_info', 1));
-
-        $text = array();
-        $languages = Language::getLanguages(false);
-        foreach ($languages as $lang) {
-            $text[$lang['id_lang']] = Tools::getValue('text_'.$lang['id_lang']);
-        }
-
-        $info->text = $text;
-
-        if (Shop::isFeatureActive() && !$info->id_shop) {
-            $saved = true;
-            $shop_ids = Shop::getShops();
-            foreach ($shop_ids as $id_shop) {
-                $info->id_shop = $id_shop;
-                $saved &= $info->add();
-            }
-        } else {
-            $saved = $info->save();
-        }
-
-        return $saved;
-    }
-
     protected function renderForm()
     {
         $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
+        $file_description = null;
+        
+        if (Configuration::get('STORE_GGMAP_ICON')) {
+            $image_Url = '/modules/'.$this->name.'/views/img/'.Configuration::get('STORE_GGMAP_ICON');
+            $file_description = '<p>'.$this->trans('Actual icon', array(), 'Modules.storeggmap').' : ';
+            $file_description .= '<img src="'.$image_Url.'"/> <button type="submit" name="delicon" class="delicon btn btn-default"><i class="icon-trash"></i></button></p>';
+        }
 
         $fields_form = array(
             'tinymce' => true,
@@ -121,10 +136,15 @@ class Storeggmap extends Module implements WidgetInterface
             'input' => array(
                 'content' => array(
                     'type' => 'text',
-                    'label' => $this->trans('Google Map Api', array(), 'Modules.storeggmap'),
+                    'label' => $this->trans('Google Map Api key', array(), 'Modules.storeggmap'),
                     'name' => 'ggmap_apikey',
-                    'cols' => 40,
-                    'rows' => 10,
+                    'col' => 4
+                ),
+                array(
+                    'type' => 'file',
+                    'label' => $this->trans('Upload your icon', array(), 'Modules.storeggmap'),
+                    'desc' => $file_description,
+                    'name' => 'ggmap_icon',
                 ),
             ),
             'submit' => array(
@@ -168,6 +188,7 @@ class Storeggmap extends Module implements WidgetInterface
     public function getFormValues()
     {
         $fields_value['ggmap_apikey'] = Configuration::get('STORE_GGMAP_APIKEY');
+        $fields_value['ggmap_icon'] = Configuration::get('STORE_GGMAP_ICON');
 
         return $fields_value;
     }
@@ -192,6 +213,7 @@ class Storeggmap extends Module implements WidgetInterface
             $this->context->controller->registerJavascript('modules-ggmap', 'modules/'.$this->name.'/views/js/ggmap.js', ['position' => 'bottom', 'priority' => 150]);
             Media::addJsDef(array(
                 'storeGGmapCall' => _MODULE_DIR_.$this->name.'/'.$this->name.'Call.php',
+                'urlIcon' => (Configuration::get('STORE_GGMAP_ICON') ? _MODULE_DIR_.$this->name.'/views/img/'.Configuration::get('STORE_GGMAP_ICON') : null),
                 'id_lang' => (int)$this->context->language->id,
                 'defaultLat' => $this->defaultLatLng(),
                 'defaultLong' => $this->defaultLatLng(1),

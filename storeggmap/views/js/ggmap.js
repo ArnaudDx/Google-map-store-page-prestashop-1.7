@@ -28,10 +28,19 @@ function initMap() {
 }
 
 function createMarker(theMap, theStore) {
-    var marker = new google.maps.Marker({
-        position: {lat: theStore.latitude, lng: theStore.longitude},
-        title: theStore.name,
-    });
+    
+    if (urlIcon) {
+        var marker = new google.maps.Marker({
+            position: {lat: theStore.latitude, lng: theStore.longitude},
+            icon : urlIcon,
+            title: theStore.name,
+        });
+    } else {
+        var marker = new google.maps.Marker({
+            position: {lat: theStore.latitude, lng: theStore.longitude},
+            title: theStore.name,
+        });
+    }
     
     marker.addListener('click', function() {
         if (infowindow) {
