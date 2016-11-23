@@ -1,7 +1,10 @@
 <h1>Show your store list on a google map - for prestashop 1.7</h1>
 <h2>About</h2>
 <p>Display a google map block fill with your store list.</p>
-<img src="https://www.prestashop.com/forums/uploads/monthly_11_2016/post-46954-0-36708900-1479465318.jpg" />
+<p>Front Office view</p>
+<img src="https://www.prestashop.com/forums/uploads/monthly_11_2016/post-46954-0-29508700-1479897509.jpg"/>
+<p>Back Office view</p>
+<img src="https://www.prestashop.com/forums/uploads/monthly_11_2016/post-46954-0-47603100-1479897523.jpg"/>
 <h3>Installation</h3>
 <ol>
 <li>Upload the storeggmap folder by ftp on your "modules" folder</li>
