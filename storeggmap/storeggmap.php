@@ -39,7 +39,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->name = 'storeggmap';
         $this->author = 'ArnaudDx';
-        $this->version = '1.2.9';
+        $this->version = '1.3.13';
         $this->need_instance = 0;
 
         $this->bootstrap = true;
@@ -56,6 +56,7 @@ class Storeggmap extends Module implements WidgetInterface
     public function install()
     {
         return parent::install() &&
+        $this->registerHook('displayBackOfficeHeader') &&
         $this->registerHook('displayHeader');
     }
 
@@ -63,6 +64,8 @@ class Storeggmap extends Module implements WidgetInterface
     {
         return Configuration::deleteByName('STORE_GGMAP_APIKEY') &&
         Configuration::deleteByName('STORE_GGMAP_ICON') &&
+        Configuration::deleteByName('STORE_GGMAP_LAT') &&
+        Configuration::deleteByName('STORE_GGMAP_LONG') &&
         parent::uninstall();
         
     }
@@ -82,36 +85,37 @@ class Storeggmap extends Module implements WidgetInterface
                 $output .= $this->displayError($this->trans('Error while icon deletion.', array(), 'Admin.Notifications.Error'));
             }
         } elseif (Tools::isSubmit('save_storemap')) {
-            if (!Tools::getValue('ggmap_apikey')) {
-                $output .= $this->displayError($this->trans('Please fill out all fields.', array(), 'Admin.Notifications.Error'));
-            } else {
-                Configuration::updateValue('STORE_GGMAP_APIKEY', Tools::getValue('ggmap_apikey'));
-                if (isset($_FILES['ggmap_icon']['name']) && !empty($_FILES['ggmap_icon']['name'])) {
-                    Configuration::updateValue('STORE_GGMAP_ICON', $_FILES['ggmap_icon']['name']);
-                    
-                    if (isset($_FILES['ggmap_icon']) && $_FILES['ggmap_icon']) {
-                        $tmp_name = $_FILES['ggmap_icon']['tmp_name'];
-                        $name = $_FILES['ggmap_icon']['name'];
-                        $type = Tools::strtolower(Tools::substr(strrchr($_FILES['ggmap_icon']['name'], '.'), 1));
-                        $imagesize = @getimagesize($_FILES['ggmap_icon']['tmp_name']);
-                        if (in_array( 
-                            Tools::strtolower(Tools::substr(strrchr($imagesize['mime'], '/'), 1)), array(
-                                'jpg',
-                                'gif',
-                                'jpeg',
-                                'png'
-                            )) &&
-                        in_array($type, array('jpg', 'gif', 'jpeg', 'png'))) {
-                            move_uploaded_file($tmp_name, $url_path.$name);
-                            $output .= $this->displayConfirmation($this->trans('Icon added', array(), 'Admin.Notifications.Error'));
-                        } else {
-                            $output .= $this->displayError($this->trans('Image format error.', array(), 'Admin.Notifications.Error'));
-                        }
+            Configuration::updateValue('STORE_GGMAP_APIKEY', Tools::getValue('ggmap_apikey'));
+            Configuration::updateValue('STORE_GGMAP_LAT', Tools::getValue('ggmap_lat'));
+            Configuration::updateValue('STORE_GGMAP_LONG', Tools::getValue('ggmap_long'));
+            
+            if (isset($_FILES['ggmap_icon']['name']) && !empty($_FILES['ggmap_icon']['name'])) {
+                Configuration::updateValue('STORE_GGMAP_ICON', $_FILES['ggmap_icon']['name']);
+                
+                if (isset($_FILES['ggmap_icon']) && $_FILES['ggmap_icon']) {
+                    $tmp_name = $_FILES['ggmap_icon']['tmp_name'];
+                    $name = $_FILES['ggmap_icon']['name'];
+                    $type = Tools::strtolower(Tools::substr(strrchr($_FILES['ggmap_icon']['name'], '.'), 1));
+                    $imagesize = @getimagesize($_FILES['ggmap_icon']['tmp_name']);
+                    if (in_array( 
+                        Tools::strtolower(Tools::substr(strrchr($imagesize['mime'], '/'), 1)), array(
+                            'jpg',
+                            'gif',
+                            'jpeg',
+                            'png'
+                        )) &&
+                    in_array($type, array('jpg', 'gif', 'jpeg', 'png'))) {
+                        move_uploaded_file($tmp_name, $url_path.$name);
+                        $output .= $this->displayConfirmation($this->trans('Icon added', array(), 'Admin.Notifications.Error'));
+                    } else {
+                        $output .= $this->displayError($this->trans('Image format error.', array(), 'Admin.Notifications.Error'));
                     }
                 }
-
-                $this->_clearCache($this->templateFile);
+            } else {
+                $output .= $this->displayConfirmation($this->trans('Settings updated', array(), 'Admin.Notifications.Error'));
             }
+
+            $this->_clearCache($this->templateFile);
         }
 
         return $output.$this->renderForm();
@@ -138,6 +142,19 @@ class Storeggmap extends Module implements WidgetInterface
                     'type' => 'text',
                     'label' => $this->trans('Google Map Api key', array(), 'Modules.storeggmap'),
                     'name' => 'ggmap_apikey',
+                    'desc' => '<p>'.$this->trans('Click on the map to define default latitude/longitude :', array(), 'Modules.storeggmap').'</p><div id="ggmap" style="height:500px;"></div>',
+                    'col' => 4
+                ),
+                array(
+                    'type' => 'text',
+                    'label' => $this->trans('Default latitude', array(), 'Modules.storeggmap'),
+                    'name' => 'ggmap_lat',
+                    'col' => 4
+                ),
+                array(
+                    'type' => 'text',
+                    'label' => $this->trans('Default longitude', array(), 'Modules.storeggmap'),
+                    'name' => 'ggmap_long',
                     'col' => 4
                 ),
                 array(
@@ -189,11 +206,14 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $fields_value['ggmap_apikey'] = Configuration::get('STORE_GGMAP_APIKEY');
         $fields_value['ggmap_icon'] = Configuration::get('STORE_GGMAP_ICON');
+        $fields_value['ggmap_lat'] = Configuration::get('STORE_GGMAP_LAT');
+        $fields_value['ggmap_long'] = Configuration::get('STORE_GGMAP_LONG');
 
         return $fields_value;
     }
     
     public function defaultLatLng($lng = null) {
+        
         $store = Db::getInstance()->getRow('SELECT latitude, longitude FROM '._DB_PREFIX_.'store');
         if ($lng) {
             return $store['longitude'];
@@ -204,17 +224,32 @@ class Storeggmap extends Module implements WidgetInterface
     
     public function hookdisplayHeader($params)
     {
+        $this->context->controller->registerStylesheet('modules-ggmap', 'modules/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
         $apikey = Configuration::get('STORE_GGMAP_APIKEY');
         if ('stores' == $this->context->controller->php_self && $apikey) {
-            $this->context->controller->registerStylesheet('modules-ggmap', 'modules/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
             // TODO 
             // How to call https://maps.googleapis.com/maps/api/js?key='.$apikey.'&callback=initMap' in this header?
             // $this->context->controller->registerJavascript('modules-initmap', 'https://maps.googleapis.com/maps/api/js?key='.$apikey.'&callback=initMap', ['position' => 'bottom', 'priority' => 100, 'inline' => true, 'attribute' => 'async']);
-            $this->context->controller->registerJavascript('modules-ggmap', 'modules/'.$this->name.'/views/js/ggmap.js', ['position' => 'bottom', 'priority' => 150]);
+            $this->context->controller->registerJavascript('modules-ggmap', 'modules/'.$this->name.'/views/js/front-ggmap.js', ['position' => 'bottom', 'priority' => 150]);
             Media::addJsDef(array(
                 'storeGGmapCall' => _MODULE_DIR_.$this->name.'/'.$this->name.'Call.php',
                 'urlIcon' => (Configuration::get('STORE_GGMAP_ICON') ? _MODULE_DIR_.$this->name.'/views/img/'.Configuration::get('STORE_GGMAP_ICON') : null),
                 'id_lang' => (int)$this->context->language->id,
+                'defaultLat' => $this->defaultLatLng(),
+                'defaultLong' => $this->defaultLatLng(1),
+            ));
+        }
+    }
+    
+    public function hookdisplayBackOfficeHeader($params)
+    {
+
+        if ('AdminModules' == Tools::getValue('controller') && $this->name == Tools::getValue('configure')) {
+            $apikey = Configuration::get('STORE_GGMAP_APIKEY');
+            $this->context->controller->addJquery();
+            $this->context->controller->addJS('https://maps.googleapis.com/maps/api/js?key='.$apikey);
+            $this->context->controller->addJS('modules/'.$this->name.'/views/js/back-ggmap.js');
+            Media::addJsDef(array(
                 'defaultLat' => $this->defaultLatLng(),
                 'defaultLong' => $this->defaultLatLng(1),
             ));
