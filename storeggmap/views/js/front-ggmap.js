@@ -1,6 +1,8 @@
 var map;
 var infowindow = null;
 
+$.getScript('https://maps.googleapis.com/maps/api/js?key=' + ggApiKey, initMap);
+
 function initMap() {
     
     map = new google.maps.Map(document.getElementById('storemap'), {
@@ -27,10 +29,7 @@ function initMap() {
     });
     
     map.addListener('click', function(e){
-        console.log(e.latLng.lat());
-        console.log(e.latLng.lng());
         map.setCenter(e.latLng);
-        // console.log(map.getCenter());
     });
     
 }
@@ -88,7 +87,3 @@ function infosHtml(store){
     storeHtml += '</div>';
     return storeHtml;
 }
-
-$(document).ready(function(){
-    initMap();
-});

@@ -1,5 +1,5 @@
 {*
-* 2007-2016 PrestaShop
+* 2007-2018 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,15 +18,14 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2016 PrestaShop SA
+*  @copyright  2007-2018 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
 <section id="map-style">
 {if $apiKey}
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key={$apiKey}"></script>
-    <div id="storemap"></div>
+    <div id="storemap" style="height: 500px;position: relative;overflow: hidden;"></div>
 {else}
     <div class="alert-warning">{l s='No api key entered'}</div>
 {/if}

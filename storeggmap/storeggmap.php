@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2016 PrestaShop
+* 2007-2018 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2016 PrestaShop SA
+*  @copyright  2007-2018 PrestaShop SA
 
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
@@ -39,7 +39,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->name = 'storeggmap';
         $this->author = 'ArnaudDx';
-        $this->version = '1.3.13';
+        $this->version = '1.3.14';
         $this->need_instance = 0;
 
         $this->bootstrap = true;
@@ -224,19 +224,18 @@ class Storeggmap extends Module implements WidgetInterface
     
     public function hookdisplayHeader($params)
     {
-        $this->context->controller->registerStylesheet('modules-ggmap', 'modules/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
-        $apikey = Configuration::get('STORE_GGMAP_APIKEY');
-        if ('stores' == $this->context->controller->php_self && $apikey) {
-            // TODO 
-            // How to call https://maps.googleapis.com/maps/api/js?key='.$apikey.'&callback=initMap' in this header?
-            // $this->context->controller->registerJavascript('modules-initmap', 'https://maps.googleapis.com/maps/api/js?key='.$apikey.'&callback=initMap', ['position' => 'bottom', 'priority' => 100, 'inline' => true, 'attribute' => 'async']);
-            $this->context->controller->registerJavascript('modules-ggmap', 'modules/'.$this->name.'/views/js/front-ggmap.js', ['position' => 'bottom', 'priority' => 150]);
+        $this->context->controller->registerStylesheet('modules-ggmap', _MODULE_DIR_.'/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
+		$apikey = Configuration::get('STORE_GGMAP_APIKEY');
+        if ('stores' == $this->context->controller->php_self && !empty($apikey)) {
+			$this->context->controller->addJquery();
+            $this->context->controller->addJS(_MODULE_DIR_.$this->name.'/views/js/front-ggmap.js');
             Media::addJsDef(array(
                 'storeGGmapCall' => _MODULE_DIR_.$this->name.'/'.$this->name.'Call.php',
                 'urlIcon' => (Configuration::get('STORE_GGMAP_ICON') ? _MODULE_DIR_.$this->name.'/views/img/'.Configuration::get('STORE_GGMAP_ICON') : null),
                 'id_lang' => (int)$this->context->language->id,
-                'defaultLat' => $this->defaultLatLng(),
-                'defaultLong' => $this->defaultLatLng(1),
+                'defaultLat' => Configuration::get('STORE_GGMAP_LAT'),
+                'defaultLong' => Configuration::get('STORE_GGMAP_LONG'),
+                'ggApiKey' => $apikey,
             ));
         }
     }
@@ -248,7 +247,7 @@ class Storeggmap extends Module implements WidgetInterface
             $apikey = Configuration::get('STORE_GGMAP_APIKEY');
             $this->context->controller->addJquery();
             $this->context->controller->addJS('https://maps.googleapis.com/maps/api/js?key='.$apikey);
-            $this->context->controller->addJS('modules/'.$this->name.'/views/js/back-ggmap.js');
+            $this->context->controller->addJS(_MODULE_DIR_.'/'.$this->name.'/views/js/back-ggmap.js');
             Media::addJsDef(array(
                 'defaultLat' => $this->defaultLatLng(),
                 'defaultLong' => $this->defaultLatLng(1),
