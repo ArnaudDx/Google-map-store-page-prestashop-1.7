@@ -135,14 +135,14 @@ class Storeggmap extends Module implements WidgetInterface
         $fields_form = array(
             'tinymce' => true,
             'legend' => array(
-                'title' => $this->trans('CMS block', array()),
+                'title' => $this->trans('Google map store block', array()),
             ),
             'input' => array(
                 'content' => array(
                     'type' => 'text',
                     'label' => $this->trans('Google Map Api key', array(), 'Modules.storeggmap'),
                     'name' => 'ggmap_apikey',
-                    'desc' => '<p>'.$this->trans('Click on the map to define default latitude/longitude :', array(), 'Modules.storeggmap').'</p><div id="ggmap" style="height:500px;"></div>',
+                    'desc' => '<p>'.$this->trans('Double click on the map to define the default latitude/longitude :', array(), 'Modules.storeggmap').'</p><div id="ggmap" style="height:500px;"></div>',
                     'col' => 4
                 ),
                 array(
