@@ -29,13 +29,13 @@ include dirname(__FILE__).'/../../config/config.inc.php';
 
 if ( isset($_POST['allStores']) && $_POST['allStores']) {
     
-    $stores = Store::getStores();
-    $id_lang = Tools::getValue($_POST['id_lang']);
+    $id_lang = Tools::getValue('id_lang');
+    $stores = Store::getStores($id_lang);
     
     if ($stores) {
         $storeList = array();
         foreach ($stores as $key => $storeData) {
-            if ($storeData['latitude'] && $storeData['latitude']) { 
+            if ($storeData['latitude'] && $storeData['longitude']) { 
                 $storeList[$key]['id_store'] = $storeData['id_store'];
                 $storeList[$key]['country'] = Country::getNameById($id_lang ? $id_lang : Configuration::get('PS_LANG_DEFAULT'), (int)$storeData['id_country']);
                 $storeList[$key]['state'] = State::getNameById((int)$storeData['id_state']);
