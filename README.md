@@ -14,4 +14,4 @@
 </ol>
 
 <h2>Contributing</h2>
-<p>PrestaShop modules are open-source extensions to the PrestaShop e-commerce solution. Everyone is welcome and even encouraged to contribute with their own improvements.</p>
+<p>This module is an open-source extension to the PrestaShop e-commerce solution. Everyone is welcome and even encouraged to contribute with their own improvements.</p>
