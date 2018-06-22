@@ -34,12 +34,13 @@ use PrestaShop\PrestaShop\Core\Module\WidgetInterface;
 class Storeggmap extends Module implements WidgetInterface
 {
     private $templateFile;
+	private $allowed_pages_init;
 
     public function __construct()
     {
         $this->name = 'storeggmap';
         $this->author = 'ArnaudDx';
-        $this->version = '1.3.15';
+        $this->version = '1.4.15';
         $this->need_instance = 0;
 
         $this->bootstrap = true;
@@ -51,6 +52,13 @@ class Storeggmap extends Module implements WidgetInterface
         $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => _PS_VERSION_);
 
         $this->templateFile = 'module:storeggmap/views/templates/hook/storeggmap.tpl';
+		$this->allowed_pages_init = array(
+			array("controller"=>"contact", "name"=> $this->trans('Contact', array(), 'Modules.Storeggmap.Admin')),
+			array("controller"=>"discount", "name"=> $this->trans('Discount', array(), 'Modules.Storeggmap.Admin')),
+			array("controller"=>"index", "name"=> $this->trans('Home', array(), 'Modules.Storeggmap.Admin')),
+			array("controller"=>"sitemap", "name"=> $this->trans('Sitemap', array(), 'Modules.Storeggmap.Admin')),
+			array("controller"=>"stores", "name"=> $this->trans('Stores', array(), 'Modules.Storeggmap.Admin'))
+		);
     }
 
     public function install()
@@ -66,6 +74,7 @@ class Storeggmap extends Module implements WidgetInterface
         Configuration::deleteByName('STORE_GGMAP_ICON') &&
         Configuration::deleteByName('STORE_GGMAP_LAT') &&
         Configuration::deleteByName('STORE_GGMAP_LONG') &&
+		Configuration::deleteByName('STORE_GGMAP_PAGE') &&
         parent::uninstall();
         
     }
@@ -88,6 +97,7 @@ class Storeggmap extends Module implements WidgetInterface
             Configuration::updateValue('STORE_GGMAP_APIKEY', Tools::getValue('ggmap_apikey'));
             Configuration::updateValue('STORE_GGMAP_LAT', Tools::getValue('ggmap_lat'));
             Configuration::updateValue('STORE_GGMAP_LONG', Tools::getValue('ggmap_long'));
+			Configuration::updateValue('STORE_GGMAP_PAGE', json_encode(Tools::getValue('ggmap_page')));
             
             if (isset($_FILES['ggmap_icon']['name']) && !empty($_FILES['ggmap_icon']['name'])) {
                 Configuration::updateValue('STORE_GGMAP_ICON', $_FILES['ggmap_icon']['name']);
@@ -142,6 +152,7 @@ class Storeggmap extends Module implements WidgetInterface
                     'type' => 'text',
                     'label' => $this->trans('Google Map Api key', array(), 'Modules.storeggmap'),
                     'name' => 'ggmap_apikey',
+					'required' => true, 
                     'desc' => '<p>'.$this->trans('Double click on the map to define the default latitude/longitude :', array(), 'Modules.storeggmap').'</p><div id="ggmap" style="height:500px;"></div>',
                     'col' => 4
                 ),
@@ -162,6 +173,21 @@ class Storeggmap extends Module implements WidgetInterface
                     'label' => $this->trans('Upload your icon', array(), 'Modules.storeggmap'),
                     'desc' => $file_description,
                     'name' => 'ggmap_icon',
+                ),
+				array(
+					'type' => 'select',
+					'multiple' => true,
+					'label' => $this->trans('Choose type of page to show the map', array(), 'Modules.storeggmap'),
+					'desc' => $file_description,
+					'name' => 'ggmap_page[]',
+					'required' => true, 
+					'options' => array(
+					'query' => $this->allowed_pages_init,
+					'id' => 'controller',
+					'name' => 'name'
+					),
+					'class'=> 'fixed-width-xxl',
+					'col' => 4,
                 ),
             ),
             'submit' => array(
@@ -208,6 +234,7 @@ class Storeggmap extends Module implements WidgetInterface
         $fields_value['ggmap_icon'] = Configuration::get('STORE_GGMAP_ICON');
         $fields_value['ggmap_lat'] = Configuration::get('STORE_GGMAP_LAT');
         $fields_value['ggmap_long'] = Configuration::get('STORE_GGMAP_LONG');
+		$fields_value['ggmap_page[]'] = json_decode(Configuration::get('STORE_GGMAP_PAGE'),true);
 
         return $fields_value;
     }
@@ -226,7 +253,8 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->context->controller->registerStylesheet('modules-ggmap', _MODULE_DIR_.'/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
 		$apikey = Configuration::get('STORE_GGMAP_APIKEY');
-        if ('stores' == $this->context->controller->php_self && !empty($apikey)) {
+		$authorized_pages = json_decode(Configuration::get('STORE_GGMAP_PAGE'),true);
+        if (in_array($this->context->controller->php_self, $authorized_pages) && !empty($apikey)) {
 			$this->context->controller->addJquery();
             $this->context->controller->addJS(_MODULE_DIR_.$this->name.'/views/js/front-ggmap.js');
             Media::addJsDef(array(
