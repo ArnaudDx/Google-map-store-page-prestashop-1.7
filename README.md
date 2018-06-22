@@ -10,6 +10,7 @@
 <li>Upload the storeggmap folder by ftp on your "modules" folder</li>
 <li>Install the module in back office</li>
 <li>Fill the Google Map API key input</li>
+<li>Choose pages to show the google map</li>
 <li>Paste this code : <strong>{widget name="storeggmap"}</strong> in your themes/{yourtheme}/templates/cms/stores.tpl</li>
 </ol>
 
