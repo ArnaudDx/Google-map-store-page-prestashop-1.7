@@ -22,9 +22,10 @@ function initMap() {
         },
         dataType: 'json',
         success: function(json) {
-            for (store of json.storeList) {
+            var stores = json.storeList;
+            stores.forEach(function(store){
                 createMarker(map, store);
-            }
+            });
         }
     });
     
@@ -79,9 +80,10 @@ function infosHtml(store){
     if (store.hours) {
         storeHtml += '<ul>';
         storeHtml += '<li>Our Hours :</li>';
-        for (hours of store.hours) {
+        var hoursList = store.hours;
+        hoursList.forEach(function(hours){
             storeHtml += '<li>' + hours + '</li>';
-        }
+        });
         storeHtml += '</ul>';
     }
     storeHtml += '</div>';
