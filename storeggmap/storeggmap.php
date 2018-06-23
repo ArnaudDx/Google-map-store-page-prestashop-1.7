@@ -18,8 +18,8 @@
 * versions in the future. If you wish to customize PrestaShop for your
 * needs please refer to http://www.prestashop.com for more information.
 *
-*  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2018 PrestaShop SA
+*  @author Arnaud Drieux <contact@awb-dsgn.com>
+*  @copyright  2007-2018 awb-dsgn.com
 
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
@@ -39,25 +39,25 @@ class Storeggmap extends Module implements WidgetInterface
     public function __construct()
     {
         $this->name = 'storeggmap';
-        $this->author = 'ArnaudDx';
-        $this->version = '1.4.15';
+        $this->author = 'Arnaud Drieux';
+        $this->version = '1.4.16';
         $this->need_instance = 0;
 
         $this->bootstrap = true;
         parent::__construct();
 
-        $this->displayName = $this->trans('Show your stores on a google map', array());
-        $this->description = $this->trans('Add Google map on the store page', array());
+        $this->displayName = $this->l('Show your stores on a google map');
+        $this->description = $this->l('Add Google map on the store page');
 
         $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => _PS_VERSION_);
 
         $this->templateFile = 'module:storeggmap/views/templates/hook/storeggmap.tpl';
 		$this->allowed_pages_init = array(
-			array("controller"=>"contact", "name"=> $this->trans('Contact', array(), 'Modules.Storeggmap.Admin')),
-			array("controller"=>"discount", "name"=> $this->trans('Discount', array(), 'Modules.Storeggmap.Admin')),
-			array("controller"=>"index", "name"=> $this->trans('Home', array(), 'Modules.Storeggmap.Admin')),
-			array("controller"=>"sitemap", "name"=> $this->trans('Sitemap', array(), 'Modules.Storeggmap.Admin')),
-			array("controller"=>"stores", "name"=> $this->trans('Stores', array(), 'Modules.Storeggmap.Admin'))
+			array("controller"=>"contact", "name"=> $this->l('Contact')),
+			array("controller"=>"discount", "name"=> $this->l('Discount')),
+			array("controller"=>"index", "name"=> $this->l('Home')),
+			array("controller"=>"sitemap", "name"=> $this->l('Sitemap')),
+			array("controller"=>"stores", "name"=> $this->l('Stores'))
 		);
     }
 
@@ -89,9 +89,9 @@ class Storeggmap extends Module implements WidgetInterface
             if (unlink($url_path.$imageName)) {
                 Configuration::updateValue('STORE_GGMAP_ICON', null);
                 $this->_clearCache($this->templateFile);
-                $output .= $this->displayConfirmation($this->trans('Icon deleted', array(), 'Admin.Notifications.Error'));
+                $output .= $this->displayConfirmation($this->l('Icon deleted'));
             } else {
-                $output .= $this->displayError($this->trans('Error while icon deletion.', array(), 'Admin.Notifications.Error'));
+                $output .= $this->displayError($this->l('Error while icon deletion.'));
             }
         } elseif (Tools::isSubmit('save_storemap')) {
             Configuration::updateValue('STORE_GGMAP_APIKEY', Tools::getValue('ggmap_apikey'));
@@ -116,13 +116,13 @@ class Storeggmap extends Module implements WidgetInterface
                         )) &&
                     in_array($type, array('jpg', 'gif', 'jpeg', 'png'))) {
                         move_uploaded_file($tmp_name, $url_path.$name);
-                        $output .= $this->displayConfirmation($this->trans('Icon added', array(), 'Admin.Notifications.Error'));
+                        $output .= $this->displayConfirmation($this->l('Icon added'));
                     } else {
-                        $output .= $this->displayError($this->trans('Image format error.', array(), 'Admin.Notifications.Error'));
+                        $output .= $this->displayError($this->l('Image format error.'));
                     }
                 }
             } else {
-                $output .= $this->displayConfirmation($this->trans('Settings updated', array(), 'Admin.Notifications.Error'));
+                $output .= $this->displayConfirmation($this->l('Settings updated'));
             }
 
             $this->_clearCache($this->templateFile);
@@ -138,46 +138,46 @@ class Storeggmap extends Module implements WidgetInterface
         
         if (Configuration::get('STORE_GGMAP_ICON')) {
             $image_Url = '/modules/'.$this->name.'/views/img/'.Configuration::get('STORE_GGMAP_ICON');
-            $file_description = '<p>'.$this->trans('Actual icon', array(), 'Modules.storeggmap').' : ';
+            $file_description = '<p>'.$this->l('Actual icon').' : ';
             $file_description .= '<img src="'.$image_Url.'"/> <button type="submit" name="delicon" class="delicon btn btn-default"><i class="icon-trash"></i></button></p>';
         }
 
         $fields_form = array(
             'tinymce' => true,
             'legend' => array(
-                'title' => $this->trans('Google map store block', array()),
+                'title' => $this->l('Google map store block'),
             ),
             'input' => array(
                 'content' => array(
                     'type' => 'text',
-                    'label' => $this->trans('Google Map Api key', array(), 'Modules.storeggmap'),
+                    'label' => $this->l('Google Map Api key'),
                     'name' => 'ggmap_apikey',
 					'required' => true, 
-                    'desc' => '<p>'.$this->trans('Double click on the map to define the default latitude/longitude :', array(), 'Modules.storeggmap').'</p><div id="ggmap" style="height:500px;"></div>',
+                    'desc' => '<p>'.$this->l('Double click on the map to define the default latitude/longitude :').'</p><div id="ggmap" style="height:500px;"></div>',
                     'col' => 4
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->trans('Default latitude', array(), 'Modules.storeggmap'),
+                    'label' => $this->l('Default latitude'),
                     'name' => 'ggmap_lat',
                     'col' => 4
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->trans('Default longitude', array(), 'Modules.storeggmap'),
+                    'label' => $this->l('Default longitude'),
                     'name' => 'ggmap_long',
                     'col' => 4
                 ),
                 array(
                     'type' => 'file',
-                    'label' => $this->trans('Upload your icon', array(), 'Modules.storeggmap'),
+                    'label' => $this->l('Upload your icon'),
                     'desc' => $file_description,
                     'name' => 'ggmap_icon',
                 ),
 				array(
 					'type' => 'select',
 					'multiple' => true,
-					'label' => $this->trans('Choose type of page to show the map', array(), 'Modules.storeggmap'),
+					'label' => $this->l('Choose type of page to show the map'),
 					'desc' => $file_description,
 					'name' => 'ggmap_page[]',
 					'required' => true, 
@@ -191,12 +191,12 @@ class Storeggmap extends Module implements WidgetInterface
                 ),
             ),
             'submit' => array(
-                'title' => $this->trans('Save', array(), 'Admin.Actions'),
+                'title' => $this->l('Save'),
             ),
             'buttons' => array(
                 array(
                     'href' => AdminController::$currentIndex.'&configure='.$this->name.'&token='.Tools::getAdminTokenLite('AdminModules'),
-                    'title' => $this->trans('Back to list', array(), 'Admin.Actions'),
+                    'title' => $this->l('Back to list'),
                     'icon' => 'process-icon-back'
                 )
             )
