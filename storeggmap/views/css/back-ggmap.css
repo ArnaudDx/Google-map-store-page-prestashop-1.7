@@ -1,0 +1,11 @@
+#ggmap_page_selector {
+	width: 100%!important;
+    height: 135px;
+}
+
+
+#ggmap_widget {
+	line-height: 33px;
+	font-size: 16px;
+	padding:5px;
+}
