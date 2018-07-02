@@ -27,9 +27,9 @@
 
 include dirname(__FILE__).'/../../config/config.inc.php';
 
-if ( isset($_POST['allStores']) && $_POST['allStores']) {
+if (isset($_POST['allStores']) && $_POST['allStores']) {
     
-    $id_lang = Tools::getValue('id_lang');
+    $id_lang = Tools::getValue('id_lang',null);
     $stores = Store::getStores($id_lang);
     
     if ($stores) {
@@ -37,7 +37,7 @@ if ( isset($_POST['allStores']) && $_POST['allStores']) {
         foreach ($stores as $key => $storeData) {
             if ($storeData['latitude'] && $storeData['longitude']) { 
                 $storeList[$key]['id_store'] = $storeData['id_store'];
-                $storeList[$key]['country'] = Country::getNameById($id_lang ? $id_lang : Configuration::get('PS_LANG_DEFAULT'), (int)$storeData['id_country']);
+                $storeList[$key]['country'] = Country::getNameById((!empty($id_lang) ? (int)$id_lang : Configuration::get('PS_LANG_DEFAULT')), (int)$storeData['id_country']);
                 $storeList[$key]['state'] = State::getNameById((int)$storeData['id_state']);
                 $storeList[$key]['name'] = $storeData['name'];
                 $storeList[$key]['address1'] = $storeData['address1'];
@@ -51,8 +51,6 @@ if ( isset($_POST['allStores']) && $_POST['allStores']) {
                 $storeList[$key]['note'] = $storeData['note'];
                 $storeList[$key]['latitude'] = (float)$storeData['latitude'];
                 $storeList[$key]['longitude'] = (float)$storeData['longitude'];
-            } else {
-                continue;
             }
         }
         die(json_encode(array('storeList' => $storeList)));
@@ -61,7 +59,6 @@ if ( isset($_POST['allStores']) && $_POST['allStores']) {
 
 function reorderHours($hoursArray)
 {
-    // die($hoursArray);
     $str = str_replace('[', '', $hoursArray);
     $str = str_replace(']', '', $str);
     $str = str_replace('"', '', $str);

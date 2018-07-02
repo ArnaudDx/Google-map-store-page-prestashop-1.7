@@ -40,7 +40,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->name = 'storeggmap';
         $this->author = 'Arnaud Drieux';
-        $this->version = '1.4.16';
+        $this->version = '1.4.17';
         $this->need_instance = 0;
 
         $this->bootstrap = true;
@@ -53,11 +53,17 @@ class Storeggmap extends Module implements WidgetInterface
 
         $this->templateFile = 'module:storeggmap/views/templates/hook/storeggmap.tpl';
 		$this->allowed_pages_init = array(
+			array("controller"=>"*", "name"=> $this->l('Everywhere')),
 			array("controller"=>"contact", "name"=> $this->l('Contact')),
 			array("controller"=>"discount", "name"=> $this->l('Discount')),
 			array("controller"=>"index", "name"=> $this->l('Home')),
 			array("controller"=>"sitemap", "name"=> $this->l('Sitemap')),
-			array("controller"=>"stores", "name"=> $this->l('Stores'))
+			array("controller"=>"stores", "name"=> $this->l('Stores')),
+			array("controller"=>"cms", "name"=> $this->l('CMS')),
+			array("controller"=>"product", "name"=> $this->l('Product')),
+			array("controller"=>"category", "name"=> $this->l('Category')),
+			array("controller"=>"manufacturer", "name"=> $this->l('Manufacturer')),
+			array("controller"=>"supplier", "name"=> $this->l('Supplier')),
 		);
     }
 
@@ -137,7 +143,7 @@ class Storeggmap extends Module implements WidgetInterface
         $file_description = null;
         
         if (Configuration::get('STORE_GGMAP_ICON')) {
-            $image_Url = '/modules/'.$this->name.'/views/img/'.Configuration::get('STORE_GGMAP_ICON');
+            $image_Url = $this->_path.'views/img/'.Configuration::get('STORE_GGMAP_ICON');
             $file_description = '<p>'.$this->l('Actual icon').' : ';
             $file_description .= '<img src="'.$image_Url.'"/> <button type="submit" name="delicon" class="delicon btn btn-default"><i class="icon-trash"></i></button></p>';
         }
@@ -149,6 +155,12 @@ class Storeggmap extends Module implements WidgetInterface
             ),
             'input' => array(
                 'content' => array(
+                    'type' => 'free',
+                    'label' => $this->l('Widget code to copy in your template files'),
+                    'name' => 'ggmap_widget',
+                    'col' => 4
+                ),
+				array(
                     'type' => 'text',
                     'label' => $this->l('Google Map Api key'),
                     'name' => 'ggmap_apikey',
@@ -178,9 +190,9 @@ class Storeggmap extends Module implements WidgetInterface
 					'type' => 'select',
 					'multiple' => true,
 					'label' => $this->l('Choose type of page to show the map'),
-					'desc' => $file_description,
 					'name' => 'ggmap_page[]',
-					'required' => true, 
+					'required' => true,
+					'id' => 'ggmap_page_selector',
 					'options' => array(
 					'query' => $this->allowed_pages_init,
 					'id' => 'controller',
@@ -235,6 +247,7 @@ class Storeggmap extends Module implements WidgetInterface
         $fields_value['ggmap_lat'] = Configuration::get('STORE_GGMAP_LAT');
         $fields_value['ggmap_long'] = Configuration::get('STORE_GGMAP_LONG');
 		$fields_value['ggmap_page[]'] = json_decode(Configuration::get('STORE_GGMAP_PAGE'),true);
+		$fields_value['ggmap_widget'] = '<code id="ggmap_widget">{widget name="storeggmap"}</code>';
 
         return $fields_value;
     }
@@ -254,7 +267,7 @@ class Storeggmap extends Module implements WidgetInterface
         $this->context->controller->registerStylesheet('modules-ggmap', _MODULE_DIR_.'/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
 		$apikey = Configuration::get('STORE_GGMAP_APIKEY');
 		$authorized_pages = json_decode(Configuration::get('STORE_GGMAP_PAGE'),true);
-        if (in_array($this->context->controller->php_self, $authorized_pages) && !empty($apikey)) {
+        if ((in_array("*", $authorized_pages) || in_array($this->context->controller->php_self, $authorized_pages)) && !empty($apikey)) {
 			$this->context->controller->addJquery();
             $this->context->controller->addJS(_MODULE_DIR_.$this->name.'/views/js/front-ggmap.js');
             Media::addJsDef(array(
@@ -273,6 +286,7 @@ class Storeggmap extends Module implements WidgetInterface
 
         if ('AdminModules' == Tools::getValue('controller') && $this->name == Tools::getValue('configure')) {
             $apikey = Configuration::get('STORE_GGMAP_APIKEY');
+            $this->context->controller->addCSS(_MODULE_DIR_.'/'.$this->name.'/views/css/back-ggmap.css');
             $this->context->controller->addJquery();
             $this->context->controller->addJS('https://maps.googleapis.com/maps/api/js?key='.$apikey);
             $this->context->controller->addJS(_MODULE_DIR_.'/'.$this->name.'/views/js/back-ggmap.js');
