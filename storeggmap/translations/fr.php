@@ -3,12 +3,18 @@
 global $_MODULE;
 $_MODULE = array();
 $_MODULE['<{storeggmap}prestashop>storeggmap_a01752663fa39981feafb46a15697aee'] = 'Afficher vos magasins sur une google map';
-$_MODULE['<{storeggmap}prestashop>storeggmap_e656d9986b7e5ea78cd38b34efb08198'] = 'Ajouter une google map sur vos pages';
+$_MODULE['<{storeggmap}prestashop>storeggmap_a025eb8146ff45c704bbb1c64d1dc586'] = 'Ajouter une Google map sur la page magasins';
+$_MODULE['<{storeggmap}prestashop>storeggmap_13787cfb1a15ae6690a29d3895c54de9'] = 'Partout';
 $_MODULE['<{storeggmap}prestashop>storeggmap_bbaff12800505b22a853e8b7f4eb6a22'] = 'Contact';
 $_MODULE['<{storeggmap}prestashop>storeggmap_104d9898c04874d0fbac36e125fa1369'] = 'Réductions';
 $_MODULE['<{storeggmap}prestashop>storeggmap_8cf04a9734132302f96da8e113e80ce5'] = 'Accueil';
 $_MODULE['<{storeggmap}prestashop>storeggmap_5813ce0ec7196c492c97596718f71969'] = 'Plan du site';
 $_MODULE['<{storeggmap}prestashop>storeggmap_821b8ee6937cec96c30fdafbfe836d68'] = 'Magasins';
+$_MODULE['<{storeggmap}prestashop>storeggmap_c7da501f54544eba6787960200d9efdb'] = 'CMS';
+$_MODULE['<{storeggmap}prestashop>storeggmap_deb10517653c255364175796ace3553f'] = 'Produit';
+$_MODULE['<{storeggmap}prestashop>storeggmap_3adbdb3ac060038aa0e6e6c138ef9873'] = 'Catégories';
+$_MODULE['<{storeggmap}prestashop>storeggmap_c0bd7654d5b278e65f21cf4e9153fdb4'] = 'Fabricants';
+$_MODULE['<{storeggmap}prestashop>storeggmap_ec136b444eede3bc85639fac0dd06229'] = 'Fournisseurs';
 $_MODULE['<{storeggmap}prestashop>storeggmap_9ac78dfa61138d7dfc97f7b84eacd87c'] = 'Icon supprimé';
 $_MODULE['<{storeggmap}prestashop>storeggmap_f7e2a9d12a249a59aa7b2615186d6b93'] = 'Erreur lors de la suppression de l\'icon';
 $_MODULE['<{storeggmap}prestashop>storeggmap_e5b58a3bce310dcb846cadc020496fe4'] = 'Icon ajouté';
@@ -16,6 +22,7 @@ $_MODULE['<{storeggmap}prestashop>storeggmap_853b49119c57d835ff6945755b0ab43d'] 
 $_MODULE['<{storeggmap}prestashop>storeggmap_c888438d14855d7d96a2724ee9c306bd'] = 'Paramètres mis à jour';
 $_MODULE['<{storeggmap}prestashop>storeggmap_c36446df6c21773934eb8e2be32e6159'] = 'Icon actuel';
 $_MODULE['<{storeggmap}prestashop>storeggmap_e48c6443f99dd814acb55a512ff8f23b'] = 'Bloc google map';
+$_MODULE['<{storeggmap}prestashop>storeggmap_cea27a8f2f9f4ab410d71e56312f2753'] = 'Code du widget à copier dans vos fichiers de template';
 $_MODULE['<{storeggmap}prestashop>storeggmap_7a34c63da4f2652b8067b42ffdb68f25'] = 'Clé google map';
 $_MODULE['<{storeggmap}prestashop>storeggmap_36c6b1d4398f4c0ffd11f2be5f928f99'] = 'Double-cliquez sur la carte pour définir la latitude/longitude par défaut :';
 $_MODULE['<{storeggmap}prestashop>storeggmap_3f29d38940835db66656495ac42c5d4b'] = 'Latitude par défaut';
