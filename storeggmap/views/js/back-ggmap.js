@@ -8,7 +8,8 @@ function initMap() {
         disableDefaultUI:true,
         fullscreenControl:true,
         streetViewControl:true,
-        zoom: 5
+        zoom: 5,
+		styles:customized_map
     });
     
     addMarker({lat: parseFloat(defaultLat), lng: parseFloat(defaultLong)});
@@ -20,12 +21,12 @@ function initMap() {
         addMarker(event.latLng);
     });
     
-    
 }
 // Adds a marker to the map and push to the array.
 function addMarker(location) {
   var marker = new google.maps.Marker({
     position: location,
+	icon : urlIcon,
     map: map
   });
   markers.push(marker);
