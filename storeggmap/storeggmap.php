@@ -81,6 +81,7 @@ class Storeggmap extends Module implements WidgetInterface
         Configuration::deleteByName('STORE_GGMAP_LAT') &&
         Configuration::deleteByName('STORE_GGMAP_LONG') &&
 		Configuration::deleteByName('STORE_GGMAP_PAGE') &&
+		Configuration::deleteByName('STORE_GGMAP_CUSTOM') &&
         parent::uninstall();
         
     }
@@ -104,6 +105,9 @@ class Storeggmap extends Module implements WidgetInterface
             Configuration::updateValue('STORE_GGMAP_LAT', Tools::getValue('ggmap_lat'));
             Configuration::updateValue('STORE_GGMAP_LONG', Tools::getValue('ggmap_long'));
 			Configuration::updateValue('STORE_GGMAP_PAGE', json_encode(Tools::getValue('ggmap_page')));
+			$custom_data = json_decode(Tools::getValue('ggmap_custom',null));
+			$custom_data = (!empty($custom_data) ? json_encode($custom_data) : null);
+			Configuration::updateValue('STORE_GGMAP_CUSTOM', $custom_data);
             
             if (isset($_FILES['ggmap_icon']['name']) && !empty($_FILES['ggmap_icon']['name'])) {
                 Configuration::updateValue('STORE_GGMAP_ICON', $_FILES['ggmap_icon']['name']);
@@ -201,6 +205,13 @@ class Storeggmap extends Module implements WidgetInterface
 					'class'=> 'fixed-width-xxl',
 					'col' => 4,
                 ),
+                array(
+                    'type' => 'textarea',
+                    'label' => $this->l('Customize your map'),
+					'desc' => '<p><a href="https://mapstyle.withgoogle.com/" target="_blank">'.$this->l('Go to the StylingWizard from Google').'</a> '.$this->l('and paste here the JSON code generated').'.</p>',
+                    'name' => 'ggmap_custom',
+                    'col' => 4
+                ),
             ),
             'submit' => array(
                 'title' => $this->l('Save'),
@@ -242,12 +253,14 @@ class Storeggmap extends Module implements WidgetInterface
 
     public function getFormValues()
     {
+	{
         $fields_value['ggmap_apikey'] = Configuration::get('STORE_GGMAP_APIKEY');
         $fields_value['ggmap_icon'] = Configuration::get('STORE_GGMAP_ICON');
         $fields_value['ggmap_lat'] = Configuration::get('STORE_GGMAP_LAT');
         $fields_value['ggmap_long'] = Configuration::get('STORE_GGMAP_LONG');
 		$fields_value['ggmap_page[]'] = json_decode(Configuration::get('STORE_GGMAP_PAGE'),true);
 		$fields_value['ggmap_widget'] = '<code id="ggmap_widget">{widget name="storeggmap"}</code>';
+		$fields_value['ggmap_custom'] = Configuration::get('STORE_GGMAP_CUSTOM');
 
         return $fields_value;
     }
@@ -277,6 +290,7 @@ class Storeggmap extends Module implements WidgetInterface
                 'defaultLat' => Configuration::get('STORE_GGMAP_LAT'),
                 'defaultLong' => Configuration::get('STORE_GGMAP_LONG'),
                 'ggApiKey' => $apikey,
+				'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
             ));
         }
     }
@@ -289,10 +303,12 @@ class Storeggmap extends Module implements WidgetInterface
             $this->context->controller->addCSS(_MODULE_DIR_.'/'.$this->name.'/views/css/back-ggmap.css');
             $this->context->controller->addJquery();
             $this->context->controller->addJS('https://maps.googleapis.com/maps/api/js?key='.$apikey);
-            $this->context->controller->addJS(_MODULE_DIR_.'/'.$this->name.'/views/js/back-ggmap.js');
+            $this->context->controller->addJS(_MODULE_DIR_.'/'.$this->name.'/views/js/back-ggmap.js?'.rand());
             Media::addJsDef(array(
                 'defaultLat' => $this->defaultLatLng(),
                 'defaultLong' => $this->defaultLatLng(1),
+				'urlIcon' => (Configuration::get('STORE_GGMAP_ICON') ? _MODULE_DIR_.$this->name.'/views/img/'.Configuration::get('STORE_GGMAP_ICON') : null),
+                'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
             ));
         }
     }
