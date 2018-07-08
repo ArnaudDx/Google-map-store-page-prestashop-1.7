@@ -10,7 +10,8 @@ function initMap() {
         disableDefaultUI:true,
         fullscreenControl:true,
         streetViewControl:true,
-        zoom: 5
+        zoom: 5,
+		styles:customized_map
     });
     
     $.ajax({

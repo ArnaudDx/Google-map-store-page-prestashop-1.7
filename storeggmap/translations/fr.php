@@ -31,3 +31,6 @@ $_MODULE['<{storeggmap}prestashop>storeggmap_9ca81d4f8731ac458f2c775aafc77ef7'] 
 $_MODULE['<{storeggmap}prestashop>storeggmap_f17655fc7609f0722139d9b3e9b885c1'] = 'Choisissez les type de pages sur lesquelles afficher la carte';
 $_MODULE['<{storeggmap}prestashop>storeggmap_c9cc8cce247e49bae79f15173ce97354'] = 'Enregistrer';
 $_MODULE['<{storeggmap}prestashop>storeggmap_630f6dc397fe74e52d5189e2c80f282b'] = 'Revenir à la liste';
+$_MODULE['<{storeggmap}prestashop>storeggmap_1ebea03e26f4bb344063a1ade78d4986'] = 'Personnalisez votre carte';
+$_MODULE['<{storeggmap}prestashop>storeggmap_535255b69d7fa1dae941f9de1467afd2'] = 'Allez sur le Styling Wizard de Google';
+$_MODULE['<{storeggmap}prestashop>storeggmap_52ff35870256e6522d714040df47853f'] = 'et collez ici le code JSON généré';
