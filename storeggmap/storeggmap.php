@@ -253,7 +253,6 @@ class Storeggmap extends Module implements WidgetInterface
 
     public function getFormValues()
     {
-	{
         $fields_value['ggmap_apikey'] = Configuration::get('STORE_GGMAP_APIKEY');
         $fields_value['ggmap_icon'] = Configuration::get('STORE_GGMAP_ICON');
         $fields_value['ggmap_lat'] = Configuration::get('STORE_GGMAP_LAT');
