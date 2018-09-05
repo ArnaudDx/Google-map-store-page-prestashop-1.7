@@ -34,4 +34,4 @@ $_MODULE['<{storeggmap}prestashop>storeggmap_630f6dc397fe74e52d5189e2c80f282b'] 
 $_MODULE['<{storeggmap}prestashop>storeggmap_1ebea03e26f4bb344063a1ade78d4986'] = 'Personnalisez votre carte';
 $_MODULE['<{storeggmap}prestashop>storeggmap_535255b69d7fa1dae941f9de1467afd2'] = 'Allez sur le Styling Wizard de Google';
 $_MODULE['<{storeggmap}prestashop>storeggmap_52ff35870256e6522d714040df47853f'] = 'et collez ici le code JSON généré';
-$_MODULE['<{storeggmap}prestashop>storeggmap_30c4513b55190a2875d6180b79798d20'] = 'Zoom par défault';
+$_MODULE['<{storeggmap}prestashop>storeggmap_30c4513b55190a2875d6180b79798d20'] = 'Zoom par défaut';
