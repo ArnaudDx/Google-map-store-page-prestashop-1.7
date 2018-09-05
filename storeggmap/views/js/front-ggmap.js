@@ -4,13 +4,12 @@ var infowindow = null;
 $.getScript('https://maps.googleapis.com/maps/api/js?key=' + ggApiKey, initMap);
 
 function initMap() {
-    
     map = new google.maps.Map(document.getElementById('storemap'), {
         center: {lat: parseFloat(defaultLat), lng: parseFloat(defaultLong)},
+        zoom: parseFloat(defaultZoom) || 5,
         disableDefaultUI:true,
         fullscreenControl:true,
         streetViewControl:true,
-        zoom: 5,
 		styles:customized_map
     });
     

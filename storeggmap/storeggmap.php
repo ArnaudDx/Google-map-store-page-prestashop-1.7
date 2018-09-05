@@ -82,6 +82,7 @@ class Storeggmap extends Module implements WidgetInterface
         Configuration::deleteByName('STORE_GGMAP_LONG') &&
 		Configuration::deleteByName('STORE_GGMAP_PAGE') &&
 		Configuration::deleteByName('STORE_GGMAP_CUSTOM') &&
+		Configuration::deleteByName('STORE_GGMAP_ZOOM') &&
         parent::uninstall();
         
     }
@@ -104,6 +105,7 @@ class Storeggmap extends Module implements WidgetInterface
             Configuration::updateValue('STORE_GGMAP_APIKEY', Tools::getValue('ggmap_apikey'));
             Configuration::updateValue('STORE_GGMAP_LAT', Tools::getValue('ggmap_lat'));
             Configuration::updateValue('STORE_GGMAP_LONG', Tools::getValue('ggmap_long'));
+            Configuration::updateValue('STORE_GGMAP_ZOOM', Tools::getValue('ggmap_zoom'));
 			Configuration::updateValue('STORE_GGMAP_PAGE', json_encode(Tools::getValue('ggmap_page')));
 			$custom_data = json_decode(Tools::getValue('ggmap_custom',null));
 			$custom_data = (!empty($custom_data) ? json_encode($custom_data) : null);
@@ -185,6 +187,12 @@ class Storeggmap extends Module implements WidgetInterface
                     'col' => 4
                 ),
                 array(
+                    'type' => 'text',
+                    'label' => $this->l('Default Zoom'),
+                    'name' => 'ggmap_zoom',
+                    'col' => 4
+                ),
+                array(
                     'type' => 'file',
                     'label' => $this->l('Upload your icon'),
                     'desc' => $file_description,
@@ -257,6 +265,7 @@ class Storeggmap extends Module implements WidgetInterface
         $fields_value['ggmap_icon'] = Configuration::get('STORE_GGMAP_ICON');
         $fields_value['ggmap_lat'] = Configuration::get('STORE_GGMAP_LAT');
         $fields_value['ggmap_long'] = Configuration::get('STORE_GGMAP_LONG');
+        $fields_value['ggmap_zoom'] = Configuration::get('STORE_GGMAP_ZOOM');
 		$fields_value['ggmap_page[]'] = json_decode(Configuration::get('STORE_GGMAP_PAGE'),true);
 		$fields_value['ggmap_widget'] = '<code id="ggmap_widget">{widget name="storeggmap"}</code>';
 		$fields_value['ggmap_custom'] = Configuration::get('STORE_GGMAP_CUSTOM');
@@ -273,6 +282,10 @@ class Storeggmap extends Module implements WidgetInterface
             return $store['latitude'];
         }
     }
+
+    public function defaulZoom($lng = null) {
+        return 12;
+    }
     
     public function hookdisplayHeader($params)
     {
@@ -288,6 +301,7 @@ class Storeggmap extends Module implements WidgetInterface
                 'id_lang' => (int)$this->context->language->id,
                 'defaultLat' => Configuration::get('STORE_GGMAP_LAT'),
                 'defaultLong' => Configuration::get('STORE_GGMAP_LONG'),
+                'defaultZoom' => Configuration::get('STORE_GGMAP_ZOOM'),
                 'ggApiKey' => $apikey,
 				'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
             ));
@@ -306,6 +320,7 @@ class Storeggmap extends Module implements WidgetInterface
             Media::addJsDef(array(
                 'defaultLat' => $this->defaultLatLng(),
                 'defaultLong' => $this->defaultLatLng(1),
+                'defaultZoom' => $this->defaulZoom(),
 				'urlIcon' => (Configuration::get('STORE_GGMAP_ICON') ? _MODULE_DIR_.$this->name.'/views/img/'.Configuration::get('STORE_GGMAP_ICON') : null),
                 'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
             ));
