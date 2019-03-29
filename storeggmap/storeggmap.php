@@ -289,7 +289,8 @@ class Storeggmap extends Module implements WidgetInterface
                 'defaultLat' => Configuration::get('STORE_GGMAP_LAT'),
                 'defaultLong' => Configuration::get('STORE_GGMAP_LONG'),
                 'ggApiKey' => $apikey,
-				'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
+		'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
+	    	'subtitle' => $this->l('Our stores'),
             ));
         }
     }
