@@ -80,7 +80,7 @@ function infosHtml(store){
     }
     if (store.hours) {
         storeHtml += '<ul>';
-        storeHtml += '<li>Our Hours :</li>';
+        storeHtml += '<li>'+subtitle+' :</li>';
         var hoursList = store.hours;
         hoursList.forEach(function(hours){
             storeHtml += '<li>' + hours + '</li>';
