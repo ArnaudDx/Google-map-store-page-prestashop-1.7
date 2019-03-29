@@ -63,5 +63,8 @@ function reorderHours($hoursArray)
     $str = str_replace(']', '', $str);
     $str = str_replace('"', '', $str);
     $str = explode(",", $str);
+    foreach($str as &$row){
+		$row = str_replace('\\','',preg_replace('/u([\da-fA-F]{4})/', '&#x\1;', $row));
+	}
     return $str;
 }
