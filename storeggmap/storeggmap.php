@@ -279,7 +279,7 @@ class Storeggmap extends Module implements WidgetInterface
         $this->context->controller->registerStylesheet('modules-ggmap', _MODULE_DIR_.'/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
 		$apikey = Configuration::get('STORE_GGMAP_APIKEY');
 		$authorized_pages = json_decode(Configuration::get('STORE_GGMAP_PAGE'),true);
-        if ((in_array("*", $authorized_pages) || in_array($this->context->controller->php_self, $authorized_pages)) && !empty($apikey)) {
+        if ($authorized_pages && (in_array("*", $authorized_pages) || in_array($this->context->controller->php_self, $authorized_pages)) && !empty($apikey)) {
 			$this->context->controller->addJquery();
             $this->context->controller->addJS(_MODULE_DIR_.$this->name.'/views/js/front-ggmap.js');
             Media::addJsDef(array(
