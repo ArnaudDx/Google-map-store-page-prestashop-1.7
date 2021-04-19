@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="692c748e-6d76-4adc-a5ff-4f18e1700f29" name="Default Changelist" comment="" />
+    <list default="true" id="692c748e-6d76-4adc-a5ff-4f18e1700f29" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/storeggmap.php" beforeDir="false" afterPath="$PROJECT_DIR$/storeggmap.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storeggmapCall.php" beforeDir="false" afterPath="$PROJECT_DIR$/storeggmapCall.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/js/back-ggmap.js" beforeDir="false" afterPath="$PROJECT_DIR$/views/js/back-ggmap.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/templates/hook/storeggmap.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/views/templates/hook/storeggmap.tpl" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -39,7 +44,7 @@
       <workItem from="1618665784360" duration="69000" />
       <workItem from="1618665950383" duration="161000" />
       <workItem from="1618666133871" duration="1280000" />
-      <workItem from="1618834194806" duration="1125000" />
+      <workItem from="1618834194806" duration="1427000" />
     </task>
     <servers />
   </component>
