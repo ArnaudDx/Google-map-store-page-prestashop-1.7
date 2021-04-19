@@ -308,7 +308,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->context->controller->registerStylesheet('modules-ggmap', _MODULE_DIR_ . '/' . $this->name . '/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
         $apikey = Configuration::get('STORE_GGMAP_APIKEY');
-        $authorized_pages = json_decode(Configuration::get('STORE_GGMAP_PAGE'), true);
+        $authorized_pages = json_decode(Configuration::get('STORE_GGMAP_PAGE',null,null,null,'store'), true);
         if ($authorized_pages && (in_array("*", $authorized_pages) || in_array($this->context->controller->php_self, $authorized_pages)) && !empty($apikey)) {
             $this->context->controller->addJquery();
             $this->context->controller->addJS(_MODULE_DIR_ . $this->name . '/views/js/front-ggmap.js');
@@ -319,7 +319,7 @@ class Storeggmap extends Module implements WidgetInterface
                 'defaultLat' => Configuration::get('STORE_GGMAP_LAT'),
                 'defaultLong' => Configuration::get('STORE_GGMAP_LONG'),
                 'defaultZoom' => Configuration::get('STORE_GGMAP_ZOOM', null, null, null, $this->default_zoom_level),
-                'ggApiKey' => $apikey,
+                'ggapi_url' => 'https://maps.googleapis.com/maps/api/js?key='.$apikey.((int)Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true)?'&libraries=places':''),
                 'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
                 'subtitle' => $this->l('Our stores'),
                 'no_data_address_message' => $this->l('No details available for this search:'),

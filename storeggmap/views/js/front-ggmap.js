@@ -1,11 +1,6 @@
 var map;
 var infowindow = null;
 
-let ggapi_url = 'https://maps.googleapis.com/maps/api/js?key=' + ggApiKey;
-if (enable_search) {
-    ggapi_url = ggapi_url + '&libraries=places';
-}
-
 $.getScript(ggapi_url, initMap);
 
 const ratio_radius_zoom = {
