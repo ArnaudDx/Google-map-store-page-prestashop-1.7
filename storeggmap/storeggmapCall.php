@@ -25,17 +25,17 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
-include dirname(__FILE__).'/../../config/config.inc.php';
+include dirname(__FILE__) . '/../../config/config.inc.php';
 
 if (isset($_POST['allStores']) && $_POST['allStores']) {
     
-    $id_lang = Tools::getValue('id_lang',null);
+    $id_lang = Tools::getValue('id_lang', null);
     $stores = Store::getStores($id_lang);
     
     if ($stores) {
         $storeList = array();
         foreach ($stores as $key => $storeData) {
-            if ($storeData['latitude'] && $storeData['longitude']) { 
+            if ($storeData['latitude'] && $storeData['longitude']) {
                 $storeList[$key]['id_store'] = $storeData['id_store'];
                 $storeList[$key]['country'] = Country::getNameById((!empty($id_lang) ? (int)$id_lang : Configuration::get('PS_LANG_DEFAULT')), (int)$storeData['id_country']);
                 $storeList[$key]['state'] = State::getNameById((int)$storeData['id_state']);
@@ -63,8 +63,8 @@ function reorderHours($hoursArray)
     $str = str_replace(']', '', $str);
     $str = str_replace('"', '', $str);
     $str = explode(",", $str);
-    foreach($str as &$row){
-		$row = str_replace('\\','',preg_replace('/u([\da-fA-F]{4})/', '&#x\1;', $row));
-	}
+    foreach ($str as &$row) {
+        $row = str_replace('\\', '', preg_replace('/u([\da-fA-F]{4})/', '&#x\1;', $row));
+    }
     return $str;
 }
