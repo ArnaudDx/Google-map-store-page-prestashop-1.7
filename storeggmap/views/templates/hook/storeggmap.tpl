@@ -24,10 +24,27 @@
 *}
 
 <section id="map-style">
-{if $apiKey}
-    <div id="storemap" style="height: 500px;position: relative;overflow: hidden;"></div>
-{else}
-    <div class="alert-warning">{l s='No api key entered'}</div>
-{/if}
+    {if $apiKey}
+        <div id="storemap" style="height: 500px;position: relative;overflow: hidden;"></div>
+        {if $enable_search}
+            <section id="map_location_search" class="card">
+                <section class="form-fields">
+                    <div class="form-group">
+                        <label for="radius_input" class="form-control-label">{l s='Select a radius' mod='storeggmap'}</label>
+                        <select name="radius_input" id="radius_input" class="form-control">
+                            <option value="15">15</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <label for="location_input" class="form-control-label">{l s='Enter a city name' mod='storeggmap'}</label>
+                        <input type="text" name="location_input" id="location_input" class="form-control">
+                    </div>
+                </section>
+            </section>
+        {/if}
+    {else}
+        <div class="alert-warning">{l s='No api key registered' mod='storeggmap'}</div>
+    {/if}
 </section>
 
