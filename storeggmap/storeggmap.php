@@ -36,12 +36,13 @@ class Storeggmap extends Module implements WidgetInterface
     private $templateFile;
     private $allowed_pages_init;
     private $default_zoom_level = 12;
+    private $allowed_zoom_level;
     
     public function __construct()
     {
         $this->name = 'storeggmap';
         $this->author = 'Arnaud Drieux';
-        $this->version = '1.4.18';
+        $this->version = '1.5.0';
         $this->need_instance = 0;
         
         $this->bootstrap = true;
@@ -66,6 +67,9 @@ class Storeggmap extends Module implements WidgetInterface
             array("controller" => "manufacturer", "name" => $this->l('Manufacturer')),
             array("controller" => "supplier", "name" => $this->l('Supplier')),
         );
+        for ($i = 0; $i <= 20; $i++) {
+            $this->allowed_zoom_level[] = array("level" => $i, "name" => $i);
+        }
     }
     
     public function install()
@@ -84,6 +88,7 @@ class Storeggmap extends Module implements WidgetInterface
             Configuration::deleteByName('STORE_GGMAP_PAGE') &&
             Configuration::deleteByName('STORE_GGMAP_CUSTOM') &&
             Configuration::deleteByName('STORE_GGMAP_ZOOM') &&
+            Configuration::deleteByName('STORE_GGMAP_SEARCH') &&
             parent::uninstall();
         
     }
@@ -111,6 +116,7 @@ class Storeggmap extends Module implements WidgetInterface
             $custom_data = json_decode(Tools::getValue('ggmap_custom', null));
             $custom_data = (!empty($custom_data) ? json_encode($custom_data) : null);
             Configuration::updateValue('STORE_GGMAP_CUSTOM', $custom_data);
+            Configuration::updateValue('STORE_GGMAP_SEARCH', Tools::getValue('ggmap_search'));
             
             if (isset($_FILES['ggmap_icon']['name']) && !empty($_FILES['ggmap_icon']['name'])) {
                 Configuration::updateValue('STORE_GGMAP_ICON', $_FILES['ggmap_icon']['name']);
@@ -188,9 +194,16 @@ class Storeggmap extends Module implements WidgetInterface
                     'col' => 4
                 ),
                 array(
-                    'type' => 'text',
+                    'type' => 'select',
                     'label' => $this->l('Default Zoom'),
                     'name' => 'ggmap_zoom',
+                    'required' => true,
+                    'id' => 'ggmap_zoom_selector',
+                    'options' => array(
+                        'query' => $this->allowed_zoom_level,
+                        'id' => 'level',
+                        'name' => 'name'
+                    ),
                     'col' => 4
                 ),
                 array(
@@ -210,9 +223,7 @@ class Storeggmap extends Module implements WidgetInterface
                         'query' => $this->allowed_pages_init,
                         'id' => 'controller',
                         'name' => 'name'
-                    ),
-                    'class' => 'fixed-width-xxl',
-                    'col' => 4,
+                    )
                 ),
                 array(
                     'type' => 'textarea',
@@ -220,6 +231,25 @@ class Storeggmap extends Module implements WidgetInterface
                     'desc' => '<p><a href="https://mapstyle.withgoogle.com/" target="_blank">' . $this->l('Go to the StylingWizard from Google') . '</a> ' . $this->l('and paste here the JSON code generated') . '.</p>',
                     'name' => 'ggmap_custom',
                     'col' => 4
+                ),
+                array(
+                    'type' => 'switch',
+                    'class' => 't',
+                    'label' => $this->l('Enable search'),
+                    'name' => 'ggmap_search',
+                    'is_bool' => true,
+                    'values' => array(
+                        array(
+                            'id' => 'active_on',
+                            'value' => 1,
+                            'label' => $this->l('Yes')
+                        ),
+                        array(
+                            'id' => 'active_off',
+                            'value' => 0,
+                            'label' => $this->l('No')
+                        )
+                    ),
                 ),
             ),
             'submit' => array(
@@ -266,10 +296,11 @@ class Storeggmap extends Module implements WidgetInterface
         $fields_value['ggmap_icon'] = Configuration::get('STORE_GGMAP_ICON');
         $fields_value['ggmap_lat'] = Configuration::get('STORE_GGMAP_LAT');
         $fields_value['ggmap_long'] = Configuration::get('STORE_GGMAP_LONG');
-        $fields_value['ggmap_zoom'] = Configuration::get('STORE_GGMAP_ZOOM');
+        $fields_value['ggmap_zoom'] = Configuration::get('STORE_GGMAP_ZOOM', null, null, null, $this->default_zoom_level);
         $fields_value['ggmap_page[]'] = json_decode(Configuration::get('STORE_GGMAP_PAGE'), true);
         $fields_value['ggmap_widget'] = '<code id="ggmap_widget">{widget name="storeggmap"}</code>';
         $fields_value['ggmap_custom'] = Configuration::get('STORE_GGMAP_CUSTOM');
+        $fields_value['ggmap_search'] = Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true);
         
         return $fields_value;
     }
@@ -292,6 +323,8 @@ class Storeggmap extends Module implements WidgetInterface
                 'ggApiKey' => $apikey,
                 'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
                 'subtitle' => $this->l('Our stores'),
+                'no_data_address_message' => $this->l('No details available for this search:'),
+                'enable_search' => (int)Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true)
             ));
         }
     }
@@ -339,6 +372,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         return array(
             'apiKey' => Configuration::get('STORE_GGMAP_APIKEY'),
+            'enable_search' => (int)Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true)
         );
     }
     
