@@ -22,7 +22,7 @@ function initMap() {
         disableDefaultUI: true,
         fullscreenControl: true,
         streetViewControl: true,
-        zoom: Number(defaultZoom) || 5,
+        zoom: Number(defaultZoom),
         styles: customized_map
     });
 

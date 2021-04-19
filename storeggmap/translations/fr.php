@@ -35,7 +35,7 @@ $_MODULE['<{storeggmap}prestashop>storeggmap_1ebea03e26f4bb344063a1ade78d4986'] 
 $_MODULE['<{storeggmap}prestashop>storeggmap_535255b69d7fa1dae941f9de1467afd2'] = 'Allez sur le Styling Wizard de Google';
 $_MODULE['<{storeggmap}prestashop>storeggmap_52ff35870256e6522d714040df47853f'] = 'et collez ici le code JSON généré';
 $_MODULE['<{storeggmap}prestashop>storeggmap_34c869c542dee932ef8cd96d2f91cae6'] = 'Nos magasins';
-$_MODULE['<{storeggmap}prestashop>storeggmap_30c4513b55190a2875d6180b79798d20'] = 'Zoom par défaut';
+$_MODULE['<{storeggmap}prestashop>storeggmap_a726a147140f3266d1a79da9f5e0936e'] = 'Niveau de zoom par défaut';
 $_MODULE['<{storeggmap}prestashop>storeggmap_9b02026097f530125ccd0439b2cba21c'] = 'Aucun détail n\'est disponible pour cette recherche :';
 $_MODULE['<{storeggmap}prestashop>storeggmap_4d9f117fffe0b68cbadf52707d1438e8'] = 'Sélectionnez un rayon';
 $_MODULE['<{storeggmap}prestashop>storeggmap_2df7b578f010fb71b49f36dcf876f814'] = 'Entrez un nom de ville';

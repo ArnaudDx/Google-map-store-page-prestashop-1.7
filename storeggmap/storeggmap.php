@@ -35,7 +35,7 @@ class Storeggmap extends Module implements WidgetInterface
 {
     private $templateFile;
     private $allowed_pages_init;
-    private $default_zoom_level = 12;
+    private $default_zoom_level = 5;
     private $allowed_zoom_level;
     
     public function __construct()
@@ -195,9 +195,8 @@ class Storeggmap extends Module implements WidgetInterface
                 ),
                 array(
                     'type' => 'select',
-                    'label' => $this->l('Default Zoom'),
+                    'label' => $this->l('Default Zoom level'),
                     'name' => 'ggmap_zoom',
-                    'required' => true,
                     'id' => 'ggmap_zoom_selector',
                     'options' => array(
                         'query' => $this->allowed_zoom_level,
@@ -319,7 +318,7 @@ class Storeggmap extends Module implements WidgetInterface
                 'id_lang' => (int)$this->context->language->id,
                 'defaultLat' => Configuration::get('STORE_GGMAP_LAT'),
                 'defaultLong' => Configuration::get('STORE_GGMAP_LONG'),
-                'defaultZoom' => Configuration::get('STORE_GGMAP_ZOOM'),
+                'defaultZoom' => Configuration::get('STORE_GGMAP_ZOOM', null, null, null, $this->default_zoom_level),
                 'ggApiKey' => $apikey,
                 'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
                 'subtitle' => $this->l('Our stores'),
