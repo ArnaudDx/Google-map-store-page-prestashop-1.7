@@ -42,7 +42,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->name = 'storeggmap';
         $this->author = 'Arnaud Drieux';
-        $this->version = '1.5.0';
+        $this->version = '1.5.1';
         $this->need_instance = 0;
         
         $this->bootstrap = true;
