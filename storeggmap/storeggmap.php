@@ -210,6 +210,7 @@ class Storeggmap extends Module implements WidgetInterface
                     'label' => $this->l('Upload your icon'),
                     'desc' => $file_description,
                     'name' => 'ggmap_icon',
+                    'col' => 8
                 ),
                 array(
                     'type' => 'select',
@@ -222,7 +223,8 @@ class Storeggmap extends Module implements WidgetInterface
                         'query' => $this->allowed_pages_init,
                         'id' => 'controller',
                         'name' => 'name'
-                    )
+                    ),
+                    'col' => 4
                 ),
                 array(
                     'type' => 'textarea',
