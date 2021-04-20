@@ -310,7 +310,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->context->controller->registerStylesheet('modules-ggmap', _MODULE_DIR_ . '/' . $this->name . '/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
         $apikey = Configuration::get('STORE_GGMAP_APIKEY');
-        if(!empty(Configuration::get('STORE_GGMAP_PAGE'))){
+        if(!empty(Configuration::get('STORE_GGMAP_PAGE')) && Configuration::get('STORE_GGMAP_PAGE') !== 'false'){
             $authorized_pages = json_decode(Configuration::get('STORE_GGMAP_PAGE'), true);
         } else {
             $authorized_pages = array('stores');
