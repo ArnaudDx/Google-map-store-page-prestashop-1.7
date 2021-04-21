@@ -1,0 +1,38 @@
+#storemap{
+    width: 100%;
+    height: 500px;
+    margin-bottom:20px;
+}
+
+#map-style .alert-warning {
+    padding: 5px 10px;
+    margin:10px 0;
+}
+
+#map_location_search {
+
+}
+
+#map_location_search .form-group{
+    display:flex;
+    justify-content:flex-start;
+    padding: 1rem;
+    margin: 0;
+}
+
+#map_location_search .form-group label{
+    white-space:nowrap;
+}
+
+#map_location_search .form-group [class^="form-control"]:not(:last-child){
+    margin-right:20px;
+}
+
+#map_location_search .form-group select{
+    height:inherit;
+    max-width:10%;
+}
+
+#map_location_search .form-group .btn-primary .material-icons{
+    margin-right:0;
+}
