@@ -42,7 +42,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->name = 'storeggmap';
         $this->author = 'Arnaud Drieux';
-        $this->version = '1.5.1';
+        $this->version = '1.5.2';
         $this->need_instance = 0;
         
         $this->bootstrap = true;
@@ -54,6 +54,7 @@ class Storeggmap extends Module implements WidgetInterface
         $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => _PS_VERSION_);
         
         $this->templateFile = 'module:storeggmap/views/templates/hook/storeggmap.tpl';
+        $this->templateDetailFile = 'module:storeggmap/views/templates/hook/storeggmap_detail.tpl';
         $this->allowed_pages_init = array(
             array("controller" => "*", "name" => $this->l('Everywhere')),
             array("controller" => "contact", "name" => $this->l('Contact')),
@@ -308,7 +309,6 @@ class Storeggmap extends Module implements WidgetInterface
     
     public function hookdisplayHeader($params)
     {
-        $this->context->controller->registerStylesheet('modules-ggmap', _MODULE_DIR_ . '/' . $this->name . '/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
         $apikey = Configuration::get('STORE_GGMAP_APIKEY');
         if(!empty(Configuration::get('STORE_GGMAP_PAGE')) && Configuration::get('STORE_GGMAP_PAGE') !== 'false'){
             $authorized_pages = json_decode(Configuration::get('STORE_GGMAP_PAGE'), true);
@@ -316,18 +316,17 @@ class Storeggmap extends Module implements WidgetInterface
             $authorized_pages = array('stores');
         }
         if ($authorized_pages && (in_array("*", $authorized_pages) || in_array($this->context->controller->php_self, $authorized_pages)) && !empty($apikey)) {
-            $this->context->controller->addJquery();
-            $this->context->controller->addJS(_MODULE_DIR_ . $this->name . '/views/js/front-ggmap.js');
+            $this->context->controller->registerStylesheet('modules-ggmap', 'modules/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
+            $this->context->controller->addJS('modules/'.$this->name.'/views/js/front-ggmap.js');
             Media::addJsDef(array(
-                'storeGGmapCall' => _MODULE_DIR_ . $this->name . '/' . $this->name . 'Call.php',
-                'urlIcon' => (Configuration::get('STORE_GGMAP_ICON') ? _MODULE_DIR_ . $this->name . '/views/img/' . Configuration::get('STORE_GGMAP_ICON') : null),
+                'storeGGmapCall' => 'modules/'.$this->name.'/' . $this->name . 'Call.php',
+                'urlIcon' => (Configuration::get('STORE_GGMAP_ICON') ? 'modules/'.$this->name.'/views/img/' . Configuration::get('STORE_GGMAP_ICON') : null),
                 'id_lang' => (int)$this->context->language->id,
                 'defaultLat' => Configuration::get('STORE_GGMAP_LAT'),
                 'defaultLong' => Configuration::get('STORE_GGMAP_LONG'),
                 'defaultZoom' => Configuration::get('STORE_GGMAP_ZOOM', null, null, null, $this->default_zoom_level),
                 'ggapi_url' => 'https://maps.googleapis.com/maps/api/js?key='.$apikey.((int)Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true)?'&libraries=places':''),
                 'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
-                'subtitle' => $this->l('Our stores'),
                 'no_data_address_message' => $this->l('No details available for this search:'),
                 'enable_search' => (int)Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true)
             ));
@@ -336,18 +335,16 @@ class Storeggmap extends Module implements WidgetInterface
     
     public function hookdisplayBackOfficeHeader($params)
     {
-        
         if ('AdminModules' == Tools::getValue('controller') && $this->name == Tools::getValue('configure')) {
             $apikey = Configuration::get('STORE_GGMAP_APIKEY');
-            $this->context->controller->addCSS(_MODULE_DIR_ . '/' . $this->name . '/views/css/back-ggmap.css');
-            $this->context->controller->addJquery();
+            $this->context->controller->addCSS(_MODULE_DIR_.$this->name.'/views/css/back-ggmap.css');
             $this->context->controller->addJS('https://maps.googleapis.com/maps/api/js?key=' . $apikey);
-            $this->context->controller->addJS(_MODULE_DIR_ . '/' . $this->name . '/views/js/back-ggmap.js?' . rand());
+            $this->context->controller->addJS(_MODULE_DIR_.$this->name.'/views/js/back-ggmap.js?' . rand());
             Media::addJsDef(array(
                 'defaultLat' => $this->defaultLatLng(),
                 'defaultLong' => $this->defaultLatLng(1),
                 'defaultZoom' => $this->default_zoom_level,
-                'urlIcon' => (Configuration::get('STORE_GGMAP_ICON') ? _MODULE_DIR_ . $this->name . '/views/img/' . Configuration::get('STORE_GGMAP_ICON') : null),
+                'urlIcon' => (Configuration::get('STORE_GGMAP_ICON') ? 'modules/'.$this->name.'/views/img/' . Configuration::get('STORE_GGMAP_ICON') : null),
                 'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
             ));
         }

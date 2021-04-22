@@ -45,8 +45,7 @@ function initMap() {
         const location_input = document.getElementById("location_input");
         const location_options = {
             fields: ["geometry"],
-            origin: map.getCenter(),
-            types: ["(cities)"]
+            origin: map.getCenter()
         };
         const location_autocomplete = new google.maps.places.Autocomplete(
             location_input,
@@ -96,7 +95,6 @@ function createMarker(theMap, theStore) {
     }
 
     marker.addListener('click', function () {
-        map.setZoom(8);
         map.setCenter(marker.getPosition());
         if (infowindow) {
             infowindow.close();
@@ -112,27 +110,20 @@ function createMarker(theMap, theStore) {
 }
 
 function infosHtml(store) {
-    var storeHtml = '<div id="store_infos">';
-    storeHtml += '<p><b>' + store.name + '</b></p>';
-    storeHtml += '<p>' + store.address1 + (store.address2 ? '<br />' + store.address2 : '') + '<br/>' + store.city + ', ' + (store.postcode ? store.postcode : '');
-    storeHtml += '<br/>' + store.country + (store.state ? ', ' + store.state : '') + '</p>';
-    if (store.phone || store.fax) {
-        storeHtml += '<p> Phone : ' + (store.phone ? store.phone : ' -') + '<br />Fax : ' + (store.fax ? store.fax : ' -') + '</p><hr/>';
-    }
-    if (store.note) {
-        storeHtml += '<p> Note : ' + store.note + '</p><hr/>';
-    }
-    if (store.hours) {
-        storeHtml += '<ul>';
-        storeHtml += '<li>' + subtitle + ' :</li>';
-        var hoursList = store.hours;
-        hoursList.forEach(function (hours) {
-            storeHtml += '<li>' + hours + '</li>';
-        });
-        storeHtml += '</ul>';
-    }
-    storeHtml += '</div>';
-    return storeHtml;
+    let htmlResponse = '';
+     $.ajax({
+        method: 'POST',
+        async: false,
+        url: storeGGmapCall,
+        data: {
+            action: 'getStoreDetail',
+            id_store: store.id_store
+        },
+        success: function (detail) {
+            htmlResponse = detail;
+        }
+    });
+     return JSON.parse(htmlResponse);
 }
 
 function filterStoreList(radius, location) {

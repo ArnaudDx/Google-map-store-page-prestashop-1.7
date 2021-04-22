@@ -9,6 +9,16 @@
     margin:10px 0;
 }
 
+/* Details */
+.store_infos .store_hours li{
+    font-size: .9375rem;
+    display: flex;
+}
+.store_infos .store_hours li .day{
+    flex: 0 1 80px;
+}
+
+/* Location search */
 #map_location_search {
 
 }
