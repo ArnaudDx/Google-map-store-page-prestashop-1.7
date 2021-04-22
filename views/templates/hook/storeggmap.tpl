@@ -37,7 +37,7 @@
                             <option value="50">50</option>
                             <option value="100">100</option>
                         </select>
-                        <label for="location_input" class="form-control-label">{l s='Enter a city name' mod='storeggmap'}</label>
+                        <label for="location_input" class="form-control-label">{l s='Your search' mod='storeggmap'}</label>
                         <input type="text" name="location_input" id="location_input" class="form-control">
                     </div>
                 </section>

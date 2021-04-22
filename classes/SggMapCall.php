@@ -56,18 +56,6 @@ class SggMapCall
             foreach ($stores as $key => $storeData) {
                 if ($storeData['latitude'] && $storeData['longitude']) {
                     $storeList[$key]['id_store'] = $storeData['id_store'];
-                    $storeList[$key]['country'] = Country::getNameById((!empty($id_lang) ? (int)$id_lang : Configuration::get('PS_LANG_DEFAULT')), (int)$storeData['id_country']);
-                    $storeList[$key]['state'] = State::getNameById((int)$storeData['id_state']);
-                    $storeList[$key]['name'] = $storeData['name'];
-                    $storeList[$key]['address1'] = $storeData['address1'];
-                    $storeList[$key]['address2'] = $storeData['address2'];
-                    $storeList[$key]['city'] = $storeData['city'];
-                    $storeList[$key]['postcode'] = $storeData['postcode'];
-                    $storeList[$key]['hours'] = $this->reorderHours($storeData['hours']);
-                    $storeList[$key]['phone'] = $storeData['phone'];
-                    $storeList[$key]['fax'] = $storeData['fax'];
-                    $storeList[$key]['email'] = $storeData['email'];
-                    $storeList[$key]['note'] = $storeData['note'];
                     $storeList[$key]['latitude'] = (float)$storeData['latitude'];
                     $storeList[$key]['longitude'] = (float)$storeData['longitude'];
                 }
@@ -123,5 +111,42 @@ class SggMapCall
         }
         
         $this->response = array('storeToHideList' => $stores);
+    }
+    
+    private function getStoreDetail()
+    {
+        $id_store = (int)Tools::getValue('id_store', null);
+        
+        if ($id_store) {
+            $module = Module::getInstanceByName('storeggmap');
+            $context = Context::getContext();
+            
+            $store = new Store($id_store, $context->language->id);
+            $store->country = Country::getNameById($context->language->id, $store->id_country);
+            $store->state = State::getNameById($store->id_state);
+            if (!empty($store->hours)) {
+                $store->hours = array_values(json_decode($store->hours));
+                $hours_with_day = array(
+                    $module->l('Monday'),
+                    $module->l('Tuesday'),
+                    $module->l('Wednesday'),
+                    $module->l('Thursday'),
+                    $module->l('Friday'),
+                    $module->l('Saturday'),
+                    $module->l('Sunday'),
+                );
+                $new_hours = array();
+                foreach ($store->hours as $k => $hours) {
+                    $new_hours[$hours_with_day[$k]] = $hours[0];
+                }
+                $store->hours = $new_hours;
+            }
+            
+            $context->smarty->assign(array(
+                'store' => $store
+            ));
+            
+            $this->response = $module->fetch($module->templateDetailFile);
+        }
     }
 }
