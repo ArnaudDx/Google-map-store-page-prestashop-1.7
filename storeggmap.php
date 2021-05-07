@@ -42,7 +42,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->name = 'storeggmap';
         $this->author = 'Arnaud Drieux';
-        $this->version = '1.5.2';
+        $this->version = '1.5.3';
         $this->need_instance = 0;
         
         $this->bootstrap = true;
@@ -319,7 +319,7 @@ class Storeggmap extends Module implements WidgetInterface
             $this->context->controller->registerStylesheet('modules-ggmap', 'modules/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
             $this->context->controller->addJS('modules/'.$this->name.'/views/js/front-ggmap.js');
             Media::addJsDef(array(
-                'storeGGmapCall' => 'modules/'.$this->name.'/' . $this->name . 'Call.php',
+                'storeGGmapCall' => $this->context->link->getBaseLink().'modules/'.$this->name.'/' . $this->name . 'Call.php',
                 'urlIcon' => (Configuration::get('STORE_GGMAP_ICON') ? 'modules/'.$this->name.'/views/img/' . Configuration::get('STORE_GGMAP_ICON') : null),
                 'id_lang' => (int)$this->context->language->id,
                 'defaultLat' => Configuration::get('STORE_GGMAP_LAT'),
