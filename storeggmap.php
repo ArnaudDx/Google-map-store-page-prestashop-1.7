@@ -172,6 +172,7 @@ class Storeggmap extends Module implements WidgetInterface
                     'type' => 'free',
                     'label' => $this->l('Widget code to copy in your template files'),
                     'name' => 'ggmap_widget',
+                    'desc' => $this->l('N.B: If the map is not displayed, please clear cache of the shop first (Advanced Parameters > Performance) and then check module configuration.'),
                     'col' => 4
                 ),
                 array(
