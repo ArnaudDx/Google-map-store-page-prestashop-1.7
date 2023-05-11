@@ -47,6 +47,7 @@ $_MODULE['<{storeggmap}prestashop>storeggmap_9b02026097f530125ccd0439b2cba21c'] 
 $_MODULE['<{storeggmap}prestashop>storeggmap_4d9f117fffe0b68cbadf52707d1438e8'] = 'Sélectionnez un rayon';
 $_MODULE['<{storeggmap}prestashop>storeggmap_cfab0c832d8feb946faf496ca3d950c4'] = 'Votre recherche';
 $_MODULE['<{storeggmap}prestashop>storeggmap_0ee8f5b4c0f620a143d2d5d86c212486'] = 'Aucune clé api enregistrée';
+$_MODULE['<{storeggmap}prestashop>storeggmap_2fe9aa2f772aff76630bc504784a5c9c'] = 'N.B : Si la carte ne s\'affiche pas, veuillez d\'abord vider le cache (Paramètres avancés > Performances), puis vérifier la configuration du module.';
 $_MODULE['<{storeggmap}prestashop>storeggmap_805cfcf32d151deee484a0c195644099'] = 'Activer la recherche';
 $_MODULE['<{storeggmap}prestashop>storeggmap_detail_6b1ddf471e23a32b3d3de4fadc465188'] = 'Nos horaires';
 $_MODULE['<{storeggmap}prestashop>storeggmap_detail_673ae02fffb72f0fe68a66f096a01347'] = 'Téléphone :';
