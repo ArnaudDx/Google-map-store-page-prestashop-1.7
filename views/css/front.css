@@ -13,16 +13,15 @@
 .store_infos .store_hours li{
     font-size: .9375rem;
     display: flex;
+    justify-content: space-between;
 }
-.store_infos .store_hours li .day{
-    flex: 0 1 80px;
+
+/* store card*/
+article.storeggmap-hide{
+    display:none;
 }
 
 /* Location search */
-#map_location_search {
-
-}
-
 #map_location_search .form-group{
     display:flex;
     justify-content:flex-start;
@@ -45,4 +44,15 @@
 
 #map_location_search .form-group .btn-primary .material-icons{
     margin-right:0;
+}
+
+@media (max-width: 900px) {
+    #map_location_search .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    #map_location_search .form-group select {
+        max-width: 100%;
+    }
 }

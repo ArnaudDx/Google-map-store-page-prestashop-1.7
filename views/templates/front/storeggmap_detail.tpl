@@ -30,7 +30,7 @@
     {/if}
     <p>{$store->address1}
         {if $store->address2 != ''}<br>{$store->address2}{/if}
-        {$store->city}{if $store->postcode != ''}, {$store->postcode}{/if}
+        <br>{$store->city}{if $store->postcode != ''}, {$store->postcode}{/if}
         <br>{$store->country}{if $store->state != ''}, {$store->state}{/if}
     </p>
     {if $store->phone != '' || $store->fax != '' || $store->email != ''}
@@ -47,7 +47,10 @@
     {if $store->hours}
         <ul class="store_hours">
             {foreach from=$store->hours key=day item=hour}
-                <li><span class="day">{$day} :</span> {$hour}</li>
+                <li>
+                    <span class="day">{$day} :</span>
+                    <span class="hour">{$hour}</span>
+                </li>
             {/foreach}
         </ul>
     {/if}

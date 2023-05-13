@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2018 PrestaShop
+* 2007-2023 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author Arnaud Drieux <contact@awb-dsgn.com>
-*  @copyright  2007-2021 awb-dsgn.com
+*  @copyright  2007-2023 awb-dsgn.com
 
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
@@ -34,15 +34,20 @@ use PrestaShop\PrestaShop\Core\Module\WidgetInterface;
 class Storeggmap extends Module implements WidgetInterface
 {
     private $templateFile;
-    private $allowed_pages_init;
-    private $default_zoom_level = 5;
-    private $allowed_zoom_level;
+    private $allowedPagesInit;
+    private $allowedZoomLevel;
+    private $defaultZoomLevel = 5;
+    
+    protected $jsPath;
+    protected $cssPath;
+    protected $imgPath;
+    protected $imgLocalPath;
     
     public function __construct()
     {
         $this->name = 'storeggmap';
         $this->author = 'Arnaud Drieux';
-        $this->version = '1.5.3';
+        $this->version = '1.6.0';
         $this->need_instance = 0;
         
         $this->bootstrap = true;
@@ -54,101 +59,238 @@ class Storeggmap extends Module implements WidgetInterface
         $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => _PS_VERSION_);
         
         $this->templateFile = 'module:storeggmap/views/templates/hook/storeggmap.tpl';
-        $this->templateDetailFile = 'module:storeggmap/views/templates/hook/storeggmap_detail.tpl';
-        $this->allowed_pages_init = array(
-            array("controller" => "*", "name" => $this->l('Everywhere')),
-            array("controller" => "contact", "name" => $this->l('Contact')),
-            array("controller" => "discount", "name" => $this->l('Discount')),
-            array("controller" => "index", "name" => $this->l('Home')),
-            array("controller" => "sitemap", "name" => $this->l('Sitemap')),
-            array("controller" => "stores", "name" => $this->l('Stores')),
-            array("controller" => "cms", "name" => $this->l('CMS')),
-            array("controller" => "product", "name" => $this->l('Product')),
-            array("controller" => "category", "name" => $this->l('Category')),
-            array("controller" => "manufacturer", "name" => $this->l('Manufacturer')),
-            array("controller" => "supplier", "name" => $this->l('Supplier')),
-        );
+        $this->templateDetailFile = 'module:storeggmap/views/templates/front/storeggmap_detail.tpl';
+        
+        $this->allowedPagesInit = [
+            ["controller" => "*", "name" => $this->l('Everywhere')],
+            ["controller" => "contact", "name" => $this->l('Contact')],
+            ["controller" => "discount", "name" => $this->l('Discount')],
+            ["controller" => "index", "name" => $this->l('Home')],
+            ["controller" => "sitemap", "name" => $this->l('Sitemap')],
+            ["controller" => "stores", "name" => $this->l('Stores')],
+            ["controller" => "cms", "name" => $this->l('CMS')],
+            ["controller" => "product", "name" => $this->l('Product')],
+            ["controller" => "category", "name" => $this->l('Category')],
+            ["controller" => "manufacturer", "name" => $this->l('Manufacturer')],
+            ["controller" => "supplier", "name" => $this->l('Supplier')]
+        ];
+        
         for ($i = 0; $i <= 20; $i++) {
-            $this->allowed_zoom_level[] = array("level" => $i, "name" => $i);
+            $this->allowedZoomLevel[] = ["level" => $i, "name" => $i];
         }
+        
+        $this->jsPath = $this->_path . 'views/js/';
+        $this->cssPath = $this->_path . 'views/css/';
+        $this->imgPath = $this->_path . 'views/img/';
+        $this->imgLocalPath = $this->local_path . 'views/img/';
     }
     
     public function install()
     {
-        return parent::install() &&
-            $this->registerHook('displayBackOfficeHeader') &&
-            $this->registerHook('displayHeader');
+        return parent::install()
+            && Configuration::updateGlobalValue('STORE_GGMAP_PAGE', json_encode(['stores']))
+            && Configuration::updateGlobalValue('STORE_GGMAP_SEARCH', 1)
+            && Configuration::updateGlobalValue('STORE_GGMAP_LAT', $this->getDefaultCoordinates())
+            && Configuration::updateGlobalValue('STORE_GGMAP_LONG', $this->getDefaultCoordinates('longitude'))
+            && Configuration::updateGlobalValue('STORE_GGMAP_ZOOM', $this->defaultZoomLevel)
+            && $this->registerHook('actionAdminControllerSetMedia')
+            && $this->registerHook('actionFrontControllerSetMedia');
     }
     
     public function uninstall()
     {
-        return Configuration::deleteByName('STORE_GGMAP_APIKEY') &&
-            Configuration::deleteByName('STORE_GGMAP_ICON') &&
-            Configuration::deleteByName('STORE_GGMAP_LAT') &&
-            Configuration::deleteByName('STORE_GGMAP_LONG') &&
-            Configuration::deleteByName('STORE_GGMAP_PAGE') &&
-            Configuration::deleteByName('STORE_GGMAP_CUSTOM') &&
-            Configuration::deleteByName('STORE_GGMAP_ZOOM') &&
-            Configuration::deleteByName('STORE_GGMAP_SEARCH') &&
-            parent::uninstall();
+        return Configuration::deleteByName('STORE_GGMAP_APIKEY')
+            && Configuration::deleteByName('STORE_GGMAP_ICON')
+            && Configuration::deleteByName('STORE_GGMAP_LAT')
+            && Configuration::deleteByName('STORE_GGMAP_LONG')
+            && Configuration::deleteByName('STORE_GGMAP_PAGE')
+            && Configuration::deleteByName('STORE_GGMAP_CUSTOM')
+            && Configuration::deleteByName('STORE_GGMAP_ZOOM')
+            && Configuration::deleteByName('STORE_GGMAP_SEARCH')
+            && parent::uninstall();
         
     }
     
     public function getContent()
     {
         $output = '';
-        $url_path = dirname(__FILE__) . '/views/img/';
         
-        if (Tools::isSubmit('delicon')) {
-            $imageName = Configuration::get('STORE_GGMAP_ICON');
-            if (unlink($url_path . $imageName)) {
+        switch (true) {
+            case (bool)Tools::isSubmit('delete_icon'):
+                $imageName = Configuration::get('STORE_GGMAP_ICON');
+                $imagePath = $this->imgLocalPath . $imageName;
+                
+                if (!file_exists($imagePath)) {
+                    $output .= $this->displayError($this->l('Icon file does not exist:') . ' ' . $imagePath);
+                    break;
+                }
+                
+                if (!unlink($imagePath)) {
+                    $output .= $this->displayError($this->l('Error while icon deletion.'));
+                    break;
+                }
+                
                 Configuration::updateValue('STORE_GGMAP_ICON', null);
                 $this->_clearCache($this->templateFile);
                 $output .= $this->displayConfirmation($this->l('Icon deleted'));
-            } else {
-                $output .= $this->displayError($this->l('Error while icon deletion.'));
-            }
-        } elseif (Tools::isSubmit('save_storemap')) {
-            Configuration::updateValue('STORE_GGMAP_APIKEY', Tools::getValue('ggmap_apikey'));
-            Configuration::updateValue('STORE_GGMAP_LAT', Tools::getValue('ggmap_lat'));
-            Configuration::updateValue('STORE_GGMAP_LONG', Tools::getValue('ggmap_long'));
-            Configuration::updateValue('STORE_GGMAP_PAGE', json_encode(Tools::getValue('ggmap_page')));
-            Configuration::updateValue('STORE_GGMAP_ZOOM', Tools::getValue('ggmap_zoom'));
-            $custom_data = json_decode(Tools::getValue('ggmap_custom', null));
-            $custom_data = (!empty($custom_data) ? json_encode($custom_data) : null);
-            Configuration::updateValue('STORE_GGMAP_CUSTOM', $custom_data);
-            Configuration::updateValue('STORE_GGMAP_SEARCH', Tools::getValue('ggmap_search'));
-            
-            if (isset($_FILES['ggmap_icon']['name']) && !empty($_FILES['ggmap_icon']['name'])) {
-                Configuration::updateValue('STORE_GGMAP_ICON', $_FILES['ggmap_icon']['name']);
+                break;
                 
-                if (isset($_FILES['ggmap_icon']) && $_FILES['ggmap_icon']) {
-                    $tmp_name = $_FILES['ggmap_icon']['tmp_name'];
-                    $name = $_FILES['ggmap_icon']['name'];
-                    $type = Tools::strtolower(Tools::substr(strrchr($_FILES['ggmap_icon']['name'], '.'), 1));
-                    $imagesize = @getimagesize($_FILES['ggmap_icon']['tmp_name']);
-                    if (in_array(
-                            Tools::strtolower(Tools::substr(strrchr($imagesize['mime'], '/'), 1)), array(
-                            'jpg',
-                            'gif',
-                            'jpeg',
-                            'png'
-                        )) &&
-                        in_array($type, array('jpg', 'gif', 'jpeg', 'png'))) {
-                        move_uploaded_file($tmp_name, $url_path . $name);
-                        $output .= $this->displayConfirmation($this->l('Icon added'));
-                    } else {
-                        $output .= $this->displayError($this->l('Image format error.'));
-                    }
+            case (bool)Tools::isSubmit('save_storemap'):
+                Configuration::updateValue('STORE_GGMAP_APIKEY', Tools::getValue('ggmap_apikey'));
+                Configuration::updateValue('STORE_GGMAP_LAT', (float) Tools::getValue('ggmap_lat'));
+                Configuration::updateValue('STORE_GGMAP_LONG', (float) Tools::getValue('ggmap_long'));
+                Configuration::updateValue('STORE_GGMAP_ZOOM', (int) Tools::getValue('ggmap_zoom'));
+                Configuration::updateValue('STORE_GGMAP_SEARCH', (int) Tools::getValue('ggmap_search'));
+                
+                ## validate pages
+                $pageSelection = Tools::getValue('ggmap_page');
+                if (!$this->isValidPageSelection($pageSelection, $output)) {
+                    break;
                 }
-            } else {
-                $output .= $this->displayConfirmation($this->l('Settings updated'));
-            }
-            
-            $this->_clearCache($this->templateFile);
+                Configuration::updateValue('STORE_GGMAP_PAGE', json_encode($pageSelection));
+                
+                ## validate customization
+                $customData = Tools::getValue('ggmap_custom', []);
+                if (!$this->isValidCustomization($customData, $output)) {
+                    break;
+                }
+                Configuration::updateValue('STORE_GGMAP_CUSTOM', (!empty($customData) ? $customData : null));
+                
+                ## upload icon
+                if(!$this->isUploadedIcon($_FILES, $output))
+                {
+                    break;
+                }
+                
+                $output .= $this->displayConfirmation($this->l('Configuration updated'));
+                break;
         }
         
+        $this->_clearCache($this->templateFile);
+        
         return $output . $this->renderForm();
+    }
+    
+    protected function isValidPageSelection($submittedData, &$errorMessage)
+    {
+        if (!is_array($submittedData)) {
+            $errorMessage .= $this->displayError($this->l('Error while saving pages.'));
+            return false;
+        }
+        
+        foreach ($submittedData as $page) {
+            
+            if (!in_array($page, array_column($this->allowedPagesInit, 'controller'))) {
+                $errorMessage .= $this->displayError($this->l('This id is not a valid page:') . ' ' . $page);
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    protected function isValidCustomization($submittedData, &$errorMessage)
+    {
+        if (empty($submittedData)) {
+            return true;
+        }
+        
+        $decoded = json_decode($submittedData, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $errorMessage .= $this->displayError($this->l('Something is wrong with map customization'));
+            return false;
+        }
+        
+        return true;
+    }
+    
+    protected function isUploadedIcon($submittedData, &$errorMessage)
+    {
+        if(empty($submittedData)
+            || empty($submittedData['ggmap_icon']['name']))
+        {
+            return true;
+        }
+        
+        if (!isset($submittedData['ggmap_icon'])
+            || empty($submittedData['ggmap_icon'])) {
+            $errorMessage .= $this->displayConfirmation($this->l('Empty icon'));
+            return false;
+        }
+        
+        $file = $submittedData['ggmap_icon'];
+        
+        if (!is_uploaded_file($file['tmp_name'])
+            || $file['error'] !== UPLOAD_ERR_OK) {
+            $errorMessage .= $this->displayError($this->l('Bad icon upload'));
+            return false;
+        }
+        
+        $allowedMimes = array(
+            'jpeg' => image_type_to_mime_type(IMAGETYPE_JPEG),
+            'jpg' => image_type_to_mime_type(IMAGETYPE_JPEG),
+            'png' => image_type_to_mime_type(IMAGETYPE_PNG),
+            'gif' => image_type_to_mime_type(IMAGETYPE_GIF),
+            'bmp' => image_type_to_mime_type(IMAGETYPE_BMP),
+            'webp' => image_type_to_mime_type(IMAGETYPE_WEBP),
+        );
+        
+        $fileDetail = pathinfo($file['name']);
+        if (!isset($fileDetail['extension'])) {
+            $errorMessage .= $this->displayError($this->l('Icon extension missing'));
+            return false;
+        }
+        
+        $extension = $fileDetail['extension'];
+        if (!isset($allowedMimes[$extension])) {
+            $errorMessage .= $this->displayError($this->l('Forbidden extension'));
+            return false;
+        }
+        
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $realMime = finfo_file($finfo, $file['tmp_name']);
+        
+        $typeMimeFromExtension = $allowedMimes[$extension];
+        if ($typeMimeFromExtension !== $realMime) {
+            $errorMessage .= $this->displayError($this->l('Something is wrong with file'));
+            return false;
+        }
+        
+        switch ($typeMimeFromExtension) {
+            case 'image/jpeg':
+                $canFinishUpload = (bool)imagecreatefromjpeg($file['tmp_name']);
+                break;
+            case 'image/png':
+                $canFinishUpload = (bool)imagecreatefrompng($file['tmp_name']);
+                break;
+            case 'image/gif':
+                $canFinishUpload = (bool)imagecreatefromgif($file['tmp_name']);
+                break;
+            case 'image/bmp':
+                $canFinishUpload = (bool)imagecreatefrombmp($file['tmp_name']);
+                break;
+            case 'image/webp':
+                $canFinishUpload = (bool)imagecreatefromwebp($file['tmp_name']);
+                break;
+            default:
+                $canFinishUpload = false;
+        }
+        
+        if (!$canFinishUpload) {
+            $errorMessage .= $this->displayError($this->l('File is not an image'));
+            return false;
+        }
+        
+        $iconFileName = 'icon.'.$extension;
+        
+        if (!copy($file['tmp_name'], $this->imgLocalPath . $iconFileName)) {
+            $errorMessage .= $this->displayError($this->l('Error during uploading file'));
+            return false;
+        }
+        
+        Configuration::updateValue('STORE_GGMAP_ICON', $iconFileName);
+        
+        return true;
     }
     
     protected function renderForm()
@@ -157,9 +299,8 @@ class Storeggmap extends Module implements WidgetInterface
         $file_description = null;
         
         if (Configuration::get('STORE_GGMAP_ICON')) {
-            $image_Url = $this->_path . 'views/img/' . Configuration::get('STORE_GGMAP_ICON');
             $file_description = '<p>' . $this->l('Actual icon') . ' : ';
-            $file_description .= '<img src="' . $image_Url . '"/> <button type="submit" name="delicon" class="delicon btn btn-default"><i class="icon-trash"></i></button></p>';
+            $file_description .= '<img id="ggmap_icon_value" src="' . $this->getIconUrl() . '"/> <button type="submit" name="delete_icon" class="delicon btn btn-default"><i class="icon-trash"></i></button></p>';
         }
         
         $fields_form = array(
@@ -201,7 +342,7 @@ class Storeggmap extends Module implements WidgetInterface
                     'name' => 'ggmap_zoom',
                     'id' => 'ggmap_zoom_selector',
                     'options' => array(
-                        'query' => $this->allowed_zoom_level,
+                        'query' => $this->allowedZoomLevel,
                         'id' => 'level',
                         'name' => 'name'
                     ),
@@ -222,7 +363,7 @@ class Storeggmap extends Module implements WidgetInterface
                     'required' => true,
                     'id' => 'ggmap_page_selector',
                     'options' => array(
-                        'query' => $this->allowed_pages_init,
+                        'query' => $this->allowedPagesInit,
                         'id' => 'controller',
                         'name' => 'name'
                     ),
@@ -299,7 +440,7 @@ class Storeggmap extends Module implements WidgetInterface
         $fields_value['ggmap_icon'] = Configuration::get('STORE_GGMAP_ICON');
         $fields_value['ggmap_lat'] = Configuration::get('STORE_GGMAP_LAT');
         $fields_value['ggmap_long'] = Configuration::get('STORE_GGMAP_LONG');
-        $fields_value['ggmap_zoom'] = Configuration::get('STORE_GGMAP_ZOOM', null, null, null, $this->default_zoom_level);
+        $fields_value['ggmap_zoom'] = Configuration::get('STORE_GGMAP_ZOOM');
         $fields_value['ggmap_page[]'] = json_decode(Configuration::get('STORE_GGMAP_PAGE'), true);
         $fields_value['ggmap_widget'] = '<code id="ggmap_widget">{widget name="storeggmap"}</code>';
         $fields_value['ggmap_custom'] = Configuration::get('STORE_GGMAP_CUSTOM');
@@ -308,58 +449,139 @@ class Storeggmap extends Module implements WidgetInterface
         return $fields_value;
     }
     
-    public function hookdisplayHeader($params)
+    public function hookActionAdminControllerSetMedia()
     {
-        $apikey = Configuration::get('STORE_GGMAP_APIKEY');
-        if(!empty(Configuration::get('STORE_GGMAP_PAGE')) && Configuration::get('STORE_GGMAP_PAGE') !== 'false'){
-            $authorized_pages = json_decode(Configuration::get('STORE_GGMAP_PAGE'), true);
-        } else {
-            $authorized_pages = array('stores');
+        if ('AdminModules' != $this->context->controller->controller_name
+            || $this->name != Tools::getValue('configure')) {
+            return;
         }
-        if (!empty($apikey) && $authorized_pages && (in_array("*", $authorized_pages) || in_array($this->context->controller->php_self, $authorized_pages))) {
-            $this->context->controller->registerStylesheet('modules-ggmap', 'modules/'.$this->name.'/views/css/ggmap.css', ['media' => 'all', 'priority' => 150]);
-            $this->context->controller->addJS('modules/'.$this->name.'/views/js/front-ggmap.js');
-            Media::addJsDef(array(
-                'storeGGmapCall' => $this->context->link->getBaseLink().'modules/'.$this->name.'/' . $this->name . 'Call.php',
-                'urlIcon' => (Configuration::get('STORE_GGMAP_ICON') ? 'modules/'.$this->name.'/views/img/' . Configuration::get('STORE_GGMAP_ICON') : null),
-                'id_lang' => (int)$this->context->language->id,
-                'defaultLat' => Configuration::get('STORE_GGMAP_LAT'),
-                'defaultLong' => Configuration::get('STORE_GGMAP_LONG'),
-                'defaultZoom' => Configuration::get('STORE_GGMAP_ZOOM', null, null, null, $this->default_zoom_level),
-                'ggapi_url' => 'https://maps.googleapis.com/maps/api/js?key='.$apikey.((int)Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true)?'&libraries=places':''),
-                'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
-                'no_data_address_message' => $this->l('No details available for this search:'),
-                'enable_search' => (int)Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true)
-            ));
-        }
+        
+        ## css custom
+        $this->context->controller->addCSS($this->cssPath . 'back.css');
+
+        ## js
+        Media::addJsDef([
+            'storeGgMmapSettings' => $this->getMapSettings()
+        ]);
+        
+        $this->context->controller->addJS([
+            $this->getApiUrl(),
+            $this->jsPath.'classes/StoreGgMap.js',
+            $this->jsPath.'back.js'
+        ]);
     }
     
-    public function hookdisplayBackOfficeHeader($params)
+    public function hookActionFrontControllerSetMedia()
     {
-        if ('AdminModules' == Tools::getValue('controller') && $this->name == Tools::getValue('configure')) {
-            $apikey = Configuration::get('STORE_GGMAP_APIKEY');
-            $this->context->controller->addCSS(_MODULE_DIR_.$this->name.'/views/css/back-ggmap.css');
-            $this->context->controller->addJS('https://maps.googleapis.com/maps/api/js?key=' . $apikey);
-            $this->context->controller->addJS(_MODULE_DIR_.$this->name.'/views/js/back-ggmap.js?' . rand());
-            Media::addJsDef(array(
-                'defaultLat' => $this->defaultLatLng(),
-                'defaultLong' => $this->defaultLatLng(1),
-                'defaultZoom' => $this->default_zoom_level,
-                'urlIcon' => (Configuration::get('STORE_GGMAP_ICON') ? 'modules/'.$this->name.'/views/img/' . Configuration::get('STORE_GGMAP_ICON') : null),
-                'customized_map' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
-            ));
+        $authorizedPages = Configuration::get('STORE_GGMAP_PAGE');
+        
+        if (empty(Configuration::get('STORE_GGMAP_APIKEY'))
+            || empty($authorizedPages)) {
+            return;
         }
+        
+        $authorized_pages = json_decode(Configuration::get('STORE_GGMAP_PAGE'), true);
+        if (!in_array("*", $authorized_pages) 
+            && !in_array($this->context->controller->php_self, $authorized_pages)
+        ) {
+            return;
+        }
+
+        
+        ## css
+        $this->context->controller->registerStylesheet(
+            'theme-error', 
+            $this->cssPath.'front.css', 
+            [
+                'media' => 'all', 
+                'priority' => 50,
+                'version' => $this->version
+            ]
+        );
+        
+        ## js
+        Media::addJsDef([
+            'storeGgMmapSettings' => $this->getMapSettings()
+        ]);
+               
+        $this->context->controller->registerJavascript(
+            'storeggmap-api-url',
+            $this->getApiUrl(true),
+            [
+                'position' => 'bottom',
+                'priority' => 1000,
+                'server' => 'remote'
+            ]
+        );
+        
+        $this->context->controller->registerJavascript(
+            'storeggmap-class',
+            $this->jsPath.'classes/StoreGgMap.js',
+            [
+                'position' => 'bottom',
+                'priority' => 1001,
+                'version' => $this->version
+            ]
+        );
+        
+        $this->context->controller->registerJavascript(
+            'storeggmap-front',
+            $this->jsPath.'front.js',
+            [
+                'position' => 'bottom',
+                'priority' => 1002,
+                'version' => $this->version
+            ]
+        );
     }
     
-    public function defaultLatLng($lng = null)
+    private function getApiUrl($withSearch = false)
+    {
+        $params = '';
+        $apiKey = Configuration::get('STORE_GGMAP_APIKEY');
+        if($apiKey)
+        {
+            $request = ['key' => $apiKey];
+
+            if ($withSearch) {
+                $request['libraries'] = 'places';
+            }
+            
+            $params = '?'.http_build_query($request);
+        }
+        
+        return 'https://maps.googleapis.com/maps/api/js' . $params;
+    }
+    
+    private function getIconUrl()
+    {
+        return (Configuration::get('STORE_GGMAP_ICON') ? trim($this->context->link->getBaseLink(), '/') . $this->imgPath . Configuration::get('STORE_GGMAP_ICON') : null);
+    }
+    
+    private function getMapSettings()
+    {
+        return [
+            'id_lang' => (int)$this->context->language->id,
+            'urlIcon' => $this->getIconUrl(),
+            'urlFrontController' => Context::getContext()->link->getModuleLink('storeggmap', 'StoreInformation', array('ajax' => 1)),
+            'defaultLatitude' => (float) Configuration::get('STORE_GGMAP_LAT'),
+            'defaultLongitude' => (float) Configuration::get('STORE_GGMAP_LONG'),
+            'defaultZoom' => (int) Configuration::get('STORE_GGMAP_ZOOM'),
+            'designCustomization' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
+            'searchEnable' => (int)Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true),
+            'searchErrorMessage' => $this->l('No details available for this search:'),
+        ];
+    }
+    
+    private function getDefaultCoordinates($type = 'latitude')
     {
         
         $store = Db::getInstance()->getRow('SELECT latitude, longitude FROM ' . _DB_PREFIX_ . 'store');
-        if ($lng) {
-            return $store['longitude'];
-        } else {
-            return $store['latitude'];
+        if (!$store || !isset($store[$type])) {
+            return 0;
         }
+        
+        return $store[$type];
     }
     
     public function renderWidget($hookName = null, array $configuration = [])
@@ -373,10 +595,10 @@ class Storeggmap extends Module implements WidgetInterface
     
     public function getWidgetVariables($hookName = null, array $configuration = [])
     {
-        return array(
+        return [
             'apiKey' => Configuration::get('STORE_GGMAP_APIKEY'),
-            'enable_search' => (int)Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true)
-        );
+            'enable_search' => (int)Configuration::get('STORE_GGMAP_SEARCH')
+        ];
     }
     
 }
