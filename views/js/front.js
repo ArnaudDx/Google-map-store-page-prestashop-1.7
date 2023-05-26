@@ -1,4 +1,4 @@
 window.addEventListener("load", (event) => {
-    const storeGgMap = new StoreGgMap('storemap', storeGgMmapSettings);
-    storeGgMap.initFo();
+    const storeggmap = new StoreGgMap('storemap', storeGgMmapSettings);
+    storeggmap.initFo();
 });

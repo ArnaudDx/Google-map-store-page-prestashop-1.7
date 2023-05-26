@@ -12,7 +12,7 @@ window.addEventListener("load", (event) => {
         storeGgMmapSettings.urlIcon = document.getElementById("ggmap_icon_value").getAttribute('src');
     }
     
-    const storeGgMap = new StoreGgMap('ggmap', storeGgMmapSettings);
-    storeGgMap.initBo();
+    const storeggmap = new StoreGgMap('ggmap', storeGgMmapSettings);
+    storeggmap.initBo();
 });
 
