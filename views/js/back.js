@@ -1,6 +1,6 @@
 window.addEventListener("load", (event) => {
     /**
-        I have to do this because settings are not updated after configuration saved
+        I have to do this because hookActionAdminControllerSetMedia called before postProcess
     */
     storeGgMmapSettings.defaultLatitude = parseFloat(document.getElementById("ggmap_lat").value);
     storeGgMmapSettings.defaultLongitude = parseFloat(document.getElementById("ggmap_long").value);
