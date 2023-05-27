@@ -40,12 +40,15 @@ function upgrade_module_2_0_0($module)
         $modulePath = __PS_BASE_URI__ . 'modules/' . $module->name . '/';
         
         $toDelete = [
-            'storeggmapCall.php',
             'classes/SggMapCall.php',
-            'views/js/front-ggmap.js',
-            'views/js/back-ggmap.js',
-            'views/css/back-ggmap.css',
+            'classes/index.php',
             'classes',
+            'views/js/back-ggmap.js',
+            'views/js/front-ggmap.js',
+            'views/css/back-ggmap.css',
+            'views/css/ggmap.css',
+            'views/templates/hook/storeggmap_detail.tpl',
+            'storeggmapCall.php',
         ];
         
         foreach($toDelete as $dataPath)
