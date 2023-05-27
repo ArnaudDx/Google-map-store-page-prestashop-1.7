@@ -134,13 +134,13 @@ class Storeggmap extends Module implements WidgetInterface
                 $this->_clearCache($this->templateFile);
                 $output .= $this->displayConfirmation($this->l('Icon deleted'));
                 break;
-                
+            
             case (bool)Tools::isSubmit('save_storemap'):
                 Configuration::updateValue('STORE_GGMAP_APIKEY', Tools::getValue('ggmap_apikey'));
-                Configuration::updateValue('STORE_GGMAP_LAT', (float) Tools::getValue('ggmap_lat'));
-                Configuration::updateValue('STORE_GGMAP_LONG', (float) Tools::getValue('ggmap_long'));
-                Configuration::updateValue('STORE_GGMAP_ZOOM', (int) Tools::getValue('ggmap_zoom'));
-                Configuration::updateValue('STORE_GGMAP_SEARCH', (int) Tools::getValue('ggmap_search'));
+                Configuration::updateValue('STORE_GGMAP_LAT', (float)Tools::getValue('ggmap_lat'));
+                Configuration::updateValue('STORE_GGMAP_LONG', (float)Tools::getValue('ggmap_long'));
+                Configuration::updateValue('STORE_GGMAP_ZOOM', (int)Tools::getValue('ggmap_zoom'));
+                Configuration::updateValue('STORE_GGMAP_SEARCH', (int)Tools::getValue('ggmap_search'));
                 
                 ## validate pages
                 $pageSelection = Tools::getValue('ggmap_page');
@@ -157,8 +157,7 @@ class Storeggmap extends Module implements WidgetInterface
                 Configuration::updateValue('STORE_GGMAP_CUSTOM', (!empty($customData) ? $customData : null));
                 
                 ## upload icon
-                if(!$this->isUploadedIcon($_FILES, $output))
-                {
+                if (!$this->isUploadedIcon($_FILES, $output)) {
                     break;
                 }
                 
@@ -206,9 +205,8 @@ class Storeggmap extends Module implements WidgetInterface
     
     protected function isUploadedIcon($submittedData, &$errorMessage)
     {
-        if(empty($submittedData)
-            || empty($submittedData['ggmap_icon']['name']))
-        {
+        if (empty($submittedData)
+            || empty($submittedData['ggmap_icon']['name'])) {
             return true;
         }
         
@@ -231,9 +229,13 @@ class Storeggmap extends Module implements WidgetInterface
             'jpg' => image_type_to_mime_type(IMAGETYPE_JPEG),
             'png' => image_type_to_mime_type(IMAGETYPE_PNG),
             'gif' => image_type_to_mime_type(IMAGETYPE_GIF),
-            'bmp' => image_type_to_mime_type(IMAGETYPE_BMP),
-            'webp' => image_type_to_mime_type(IMAGETYPE_WEBP),
+            'bmp' => image_type_to_mime_type(IMAGETYPE_BMP)
         );
+        
+        if (version_compare(phpversion(), '7.1', '>=')) {
+            $allowedMimes['webp'] = image_type_to_mime_type(IMAGETYPE_WEBP);
+        }
+        
         
         $fileDetail = pathinfo($file['name']);
         if (!isset($fileDetail['extension'])) {
@@ -281,7 +283,7 @@ class Storeggmap extends Module implements WidgetInterface
             return false;
         }
         
-        $iconFileName = 'icon.'.$extension;
+        $iconFileName = 'icon.' . $extension;
         
         if (!copy($file['tmp_name'], $this->imgLocalPath . $iconFileName)) {
             $errorMessage .= $this->displayError($this->l('Error during uploading file'));
@@ -458,7 +460,7 @@ class Storeggmap extends Module implements WidgetInterface
         
         ## css custom
         $this->context->controller->addCSS($this->cssPath . 'back.css');
-
+        
         ## js
         Media::addJsDef([
             'storeGgMmapSettings' => $this->getMapSettings()
@@ -466,8 +468,8 @@ class Storeggmap extends Module implements WidgetInterface
         
         $this->context->controller->addJS([
             $this->getApiUrl(),
-            $this->jsPath.'classes/StoreGgMap.js',
-            $this->jsPath.'back.js'
+            $this->jsPath . 'classes/StoreGgMap.js',
+            $this->jsPath . 'back.js'
         ]);
     }
     
@@ -481,19 +483,19 @@ class Storeggmap extends Module implements WidgetInterface
         }
         
         $authorized_pages = json_decode(Configuration::get('STORE_GGMAP_PAGE'), true);
-        if (!in_array("*", $authorized_pages) 
+        if (!in_array("*", $authorized_pages)
             && !in_array($this->context->controller->php_self, $authorized_pages)
         ) {
             return;
         }
-
+        
         
         ## css
         $this->context->controller->registerStylesheet(
-            'theme-error', 
-            $this->cssPath.'front.css', 
+            'theme-error',
+            $this->cssPath . 'front.css',
             [
-                'media' => 'all', 
+                'media' => 'all',
                 'priority' => 50,
                 'version' => $this->version
             ]
@@ -503,7 +505,7 @@ class Storeggmap extends Module implements WidgetInterface
         Media::addJsDef([
             'storeGgMmapSettings' => $this->getMapSettings()
         ]);
-               
+        
         $this->context->controller->registerJavascript(
             'storeggmap-api-url',
             $this->getApiUrl(true),
@@ -516,7 +518,7 @@ class Storeggmap extends Module implements WidgetInterface
         
         $this->context->controller->registerJavascript(
             'storeggmap-class',
-            $this->jsPath.'classes/StoreGgMap.js',
+            $this->jsPath . 'classes/StoreGgMap.js',
             [
                 'position' => 'bottom',
                 'priority' => 1001,
@@ -526,7 +528,7 @@ class Storeggmap extends Module implements WidgetInterface
         
         $this->context->controller->registerJavascript(
             'storeggmap-front',
-            $this->jsPath.'front.js',
+            $this->jsPath . 'front.js',
             [
                 'position' => 'bottom',
                 'priority' => 1002,
@@ -539,15 +541,14 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $params = '';
         $apiKey = Configuration::get('STORE_GGMAP_APIKEY');
-        if($apiKey)
-        {
+        if ($apiKey) {
             $request = ['key' => $apiKey];
-
+            
             if ($withSearch) {
                 $request['libraries'] = 'places';
             }
             
-            $params = '?'.http_build_query($request);
+            $params = '?' . http_build_query($request);
         }
         
         return 'https://maps.googleapis.com/maps/api/js' . $params;
@@ -557,20 +558,26 @@ class Storeggmap extends Module implements WidgetInterface
     {
         return (Configuration::get('STORE_GGMAP_ICON') ? trim($this->context->link->getBaseLink(), '/') . $this->imgPath . Configuration::get('STORE_GGMAP_ICON') : null);
     }
-    
+
     private function getMapSettings()
     {
         return [
             'id_lang' => (int)$this->context->language->id,
+            'token' => $this->getToken(),
             'urlIcon' => $this->getIconUrl(),
             'urlFrontController' => Context::getContext()->link->getModuleLink('storeggmap', 'StoreInformation', array('ajax' => 1)),
-            'defaultLatitude' => (float) Configuration::get('STORE_GGMAP_LAT'),
-            'defaultLongitude' => (float) Configuration::get('STORE_GGMAP_LONG'),
-            'defaultZoom' => (int) Configuration::get('STORE_GGMAP_ZOOM'),
+            'defaultLatitude' => (float)Configuration::get('STORE_GGMAP_LAT'),
+            'defaultLongitude' => (float)Configuration::get('STORE_GGMAP_LONG'),
+            'defaultZoom' => (int)Configuration::get('STORE_GGMAP_ZOOM'),
             'designCustomization' => json_decode(Configuration::get('STORE_GGMAP_CUSTOM')),
             'searchEnable' => (int)Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true),
             'searchErrorMessage' => $this->l('No details available for this search:'),
         ];
+    }
+    
+    public function getToken()
+    {
+        return hash('sha256', _COOKIE_KEY_.$this->version.date('Ymd'));
     }
     
     private function getDefaultCoordinates($type = 'latitude')

@@ -2,10 +2,14 @@
 
 class StoreggmapStoreInformationModuleFrontController extends ModuleFrontController
 {
-
-    protected $allowedActions = ['getStores', 'getStoreDetail', 'searchStoreByRadius'];
+    protected $allowedActions = [
+        'getStores',
+        'getStoreDetail',
+        'searchStoreByRadius'
+    ];
+    
     public $response = [];
-
+    
     public function displayAjax()
     {
         $this->response = [
@@ -13,18 +17,24 @@ class StoreggmapStoreInformationModuleFrontController extends ModuleFrontControl
             'message' => null,
             'data' => null
         ];
-
+        
+        if(!Tools::isSubmit($this->module->getToken()))
+        {
+            header('HTTP/1.0 403 Forbidden');
+            exit;
+        }
+        
         if (!Tools::isSubmit('action')) {
             $this->response['message'] = $this->l('Missing parameter');
             $this->returnJsonResponse();
         }
-
+        
         $action = Tools::getValue('action');
         if (!in_array($action, $this->allowedActions)) {
             $this->response['message'] = $this->l('Missing parameter');
             $this->returnJsonResponse();
         }
-
+        
         switch ($action) {
             case 'getStores':
                 $this->response['error'] = false;
@@ -41,15 +51,15 @@ class StoreggmapStoreInformationModuleFrontController extends ModuleFrontControl
             default:
                 $this->response['message'] = $this->l('I don\'t know what to say');
         }
-
+        
         $this->returnJsonResponse();
     }
-
+    
     public function returnJsonResponse()
     {
         die(json_encode($this->response));
     }
-
+    
     private function getAllStores()
     {
         $id_lang = (int)Tools::getValue('id_lang', $this->context->language->id);
@@ -57,19 +67,19 @@ class StoreggmapStoreInformationModuleFrontController extends ModuleFrontControl
         if (!$stores) {
             return [];
         }
-
+        
         $storeList = [];
         foreach ($stores as $key => $storeData) {
             if (empty($storeData['latitude'])
                 || empty($storeData['longitude'])) {
                 continue;
             }
-
+            
             $storeList[] = [
                 'id_store' => $storeData['id_store'],
                 'title' => $storeData['name'],
-                'latitude' => (float) $storeData['latitude'],
-                'longitude' => (float) $storeData['longitude']
+                'latitude' => (float)$storeData['latitude'],
+                'longitude' => (float)$storeData['longitude']
             ];
         }
         
@@ -84,7 +94,7 @@ class StoreggmapStoreInformationModuleFrontController extends ModuleFrontControl
         if (!$id_store) {
             return [];
         }
-
+        
         $store = new Store($id_store, $id_lang);
         $store->country = Country::getNameById($id_lang, $store->id_country);
         $store->state = State::getNameById($store->id_state);
@@ -113,15 +123,14 @@ class StoreggmapStoreInformationModuleFrontController extends ModuleFrontControl
         
         return $this->module->fetch($this->module->templateDetailFile);
     }
-
+    
     private function searchStoreByRadius()
     {
         $radius = (int)Tools::getValue('radius', 15);
         $lat = (float)Tools::getValue('lat', null);
         $lng = (float)Tools::getValue('lng', null);
-    
-        if (empty($lat) || empty($lng)) 
-        {
+        
+        if (empty($lat) || empty($lng)) {
             return [];
         }
         

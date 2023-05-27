@@ -30,11 +30,10 @@ if (!defined('_PS_VERSION_')) {
 
 function upgrade_module_2_0_0($module)
 {
-    if($module->unregisterHook('displayHeader') &&
+    if ($module->unregisterHook('displayHeader') &&
         $module->unregisterHook('displayBackOfficeHeader') &&
         $module->registerHook('actionAdminControllerSetMedia') &&
-        $module->registerHook('actionFrontControllerSetMedia'))
-    {
+        $module->registerHook('actionFrontControllerSetMedia')) {
         
         $moduleLocalPath = _PS_MODULE_DIR_ . $module->name . '/';
         $modulePath = __PS_BASE_URI__ . 'modules/' . $module->name . '/';
@@ -51,25 +50,20 @@ function upgrade_module_2_0_0($module)
             'storeggmapCall.php',
         ];
         
-        foreach($toDelete as $dataPath)
-        {
-            if(!file_exists($moduleLocalPath.$dataPath))
-            {
+        foreach ($toDelete as $dataPath) {
+            if (!file_exists($moduleLocalPath . $dataPath)) {
                 continue;
             }
             
-            if (is_dir($moduleLocalPath.$dataPath)) 
-            {
-                if(!rmdir($moduleLocalPath.$dataPath))
-                {
-                    PrestaShopLogger::addLog($module->name.' - '.__FUNCTION__.' : unable to delete folder'.$modulePath.$dataPath, 1, null, null, null, true);
+            if (is_dir($moduleLocalPath . $dataPath)) {
+                if (!rmdir($moduleLocalPath . $dataPath)) {
+                    PrestaShopLogger::addLog($module->name . ' - ' . __FUNCTION__ . ' : unable to delete folder' . $modulePath . $dataPath, 1, null, null, null, true);
                 }
                 continue;
             }
             
-            if(!unlink($moduleLocalPath.$dataPath))
-            {
-                PrestaShopLogger::addLog($module->name.' - '.__FUNCTION__.' : unable to delete file '.$modulePath.$dataPath, 1, null, null, null, true);
+            if (!unlink($moduleLocalPath . $dataPath)) {
+                PrestaShopLogger::addLog($module->name . ' - ' . __FUNCTION__ . ' : unable to delete file ' . $modulePath . $dataPath, 1, null, null, null, true);
             }
         }
         return true;
