@@ -1,5 +1,5 @@
 {*
-* 2007-2018 PrestaShop
+* 2007-2023 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author Arnaud Drieux <contact@awb-dsgn.com>
-*  @copyright  2007-2021 awb-dsgn.com
+*  @copyright  2007-2023 awb-dsgn.com
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -32,10 +32,9 @@
                     <div class="form-group">
                         <label for="radius_input" class="form-control-label">{l s='Select a radius' mod='storeggmap'}</label>
                         <select name="radius_input" id="radius_input" class="form-control">
-                            <option value="15">15</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
+                            {foreach from=$radius_options key=radius item=radius_label}
+                            <option value="{$radius|strip_tags}">{$radius_label|strip_tags}</option>
+                            {/foreach}
                         </select>
                         <label for="location_input" class="form-control-label">{l s='Your search' mod='storeggmap'}</label>
                         <input type="text" name="location_input" id="location_input" class="form-control">
