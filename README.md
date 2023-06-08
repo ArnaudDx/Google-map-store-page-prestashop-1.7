@@ -1,4 +1,4 @@
-<h1>Show your store list on a google map - for PrestaShop 1.7 and higher/h1>
+<h1>Show your store list on a google map - for PrestaShop 1.7 and higher</h1>
 <h2>About</h2>
 <p>Display a google map block fill with your store list.</p>
 <p>Front Office view</p>
