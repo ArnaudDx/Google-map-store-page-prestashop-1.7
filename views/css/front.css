@@ -34,7 +34,8 @@ article.storeggmap-hide{
 }
 
 #map_location_search .form-group [class^="form-control"]:not(:last-child){
-    margin-right:20px;
+    margin-right:1rem;
+    padding: 0.5rem 0.2rem;
 }
 
 #map_location_search .form-group select{

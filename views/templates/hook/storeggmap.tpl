@@ -32,10 +32,9 @@
                     <div class="form-group">
                         <label for="radius_input" class="form-control-label">{l s='Select a radius' mod='storeggmap'}</label>
                         <select name="radius_input" id="radius_input" class="form-control">
-                            <option value="15">15</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
+                            {foreach from=$radius_options key=radius item=radius_label}
+                            <option value="{$radius|strip_tags}">{$radius_label|strip_tags}</option>
+                            {/foreach}
                         </select>
                         <label for="location_input" class="form-control-label">{l s='Your search' mod='storeggmap'}</label>
                         <input type="text" name="location_input" id="location_input" class="form-control">
