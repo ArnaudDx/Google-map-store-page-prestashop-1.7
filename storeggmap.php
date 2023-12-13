@@ -34,6 +34,7 @@ use PrestaShop\PrestaShop\Core\Module\WidgetInterface;
 class Storeggmap extends Module implements WidgetInterface
 {
     private $templateFile;
+    private $templateDetailFile;
     private $allowedPagesInit;
     private $allowedZoomLevel;
     private $defaultZoomLevel = 5;
