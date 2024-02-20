@@ -1,4 +1,5 @@
-#ggmap_zoom_selector{
+#ggmap_zoom_selector,
+#ggmap_admin_order_address_choice{
     width: 100%!important;
 }
 

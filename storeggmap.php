@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author Arnaud Drieux <contact@awb-dsgn.com>
-*  @copyright  2007-2023 awb-dsgn.com
+*  @copyright  2007-2024 awb-dsgn.com
 
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
@@ -34,7 +34,7 @@ use PrestaShop\PrestaShop\Core\Module\WidgetInterface;
 class Storeggmap extends Module implements WidgetInterface
 {
     private $templateFile;
-    public $templateDetailFile;
+    public  $templateDetailFile;
     private $allowedPagesInit;
     private $allowedZoomLevel;
     private $defaultZoomLevel = 5;
@@ -44,6 +44,9 @@ class Storeggmap extends Module implements WidgetInterface
         50,
         100,
     ];
+    
+    private static $ADDRESS_DELIVERY_CHOICE = 0;
+    private static $ADDRESS_INVOICE_CHOICE = 1;
 
     protected $jsPath;
     protected $cssPath;
@@ -54,7 +57,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->name = 'storeggmap';
         $this->author = 'Arnaud Drieux';
-        $this->version = '2.0.0';
+        $this->version = '2.1.0';
         $this->need_instance = 0;
 
         $this->bootstrap = true;
@@ -101,7 +104,8 @@ class Storeggmap extends Module implements WidgetInterface
             && Configuration::updateGlobalValue('STORE_GGMAP_LONG', $this->getDefaultCoordinates('longitude'))
             && Configuration::updateGlobalValue('STORE_GGMAP_ZOOM', $this->defaultZoomLevel)
             && $this->registerHook('actionAdminControllerSetMedia')
-            && $this->registerHook('actionFrontControllerSetMedia');
+            && $this->registerHook('actionFrontControllerSetMedia')
+            && $this->registerHook('displayAdminOrderSide');
     }
 
     public function uninstall()
@@ -114,6 +118,8 @@ class Storeggmap extends Module implements WidgetInterface
             && Configuration::deleteByName('STORE_GGMAP_CUSTOM')
             && Configuration::deleteByName('STORE_GGMAP_ZOOM')
             && Configuration::deleteByName('STORE_GGMAP_SEARCH')
+            && Configuration::deleteByName('STORE_GGMAP_ADMIN_ORDER')
+            && Configuration::deleteByName('STORE_GGMAP_ADMIN_ORDER_ADDRESS_CHOICE')
             && parent::uninstall();
 
     }
@@ -148,6 +154,8 @@ class Storeggmap extends Module implements WidgetInterface
                 Configuration::updateValue('STORE_GGMAP_LONG', (float)Tools::getValue('ggmap_long'));
                 Configuration::updateValue('STORE_GGMAP_ZOOM', (int)Tools::getValue('ggmap_zoom'));
                 Configuration::updateValue('STORE_GGMAP_SEARCH', (int)Tools::getValue('ggmap_search'));
+                Configuration::updateValue('STORE_GGMAP_ADMIN_ORDER', (int)Tools::getValue('ggmap_admin_order'));
+                Configuration::updateValue('STORE_GGMAP_ADMIN_ORDER_ADDRESS_CHOICE', (int)Tools::getValue('ggmap_admin_order_address_choice'));
 
                 ## validate pages
                 $pageSelection = Tools::getValue('ggmap_page');
@@ -416,6 +424,51 @@ class Storeggmap extends Module implements WidgetInterface
                 )
             )
         );
+        
+        if(version_compare(_PS_VERSION_, '8.0', '>='))
+        {
+            $fields_form['input'][] = [
+                'type' => 'switch',
+                'class' => 't',
+                'label' => $this->l('Enable map into admin order detail page'),
+                'name' => 'ggmap_admin_order',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'active_on',
+                        'value' => 1,
+                        'label' => $this->l('Yes')
+                    ],
+                    [
+                        'id' => 'active_off',
+                        'value' => 0,
+                        'label' => $this->l('No')
+                    ]
+                ]
+            ];
+            
+            $fields_form['input'][] = [
+                'type' => 'select',
+                'label' => $this->l('Which order address should be used to display the map?'),
+                'name' => 'ggmap_admin_order_address_choice',
+                'options' => array(
+                    'query' => [
+                        [
+                            'id' => static::$ADDRESS_INVOICE_CHOICE,
+                            'label' => $this->l('Invoice')
+                        ],
+                        [
+                            'id' => static::$ADDRESS_DELIVERY_CHOICE,
+                            'label' => $this->l('Delivery')
+                        ]
+                    ],
+                    'id' => 'id',
+                    'name' => 'label'
+                ),
+                'col' => 4
+            ];
+        }
+        
 
         $helper = new HelperForm();
         $helper->module = $this;
@@ -453,15 +506,20 @@ class Storeggmap extends Module implements WidgetInterface
         $fields_value['ggmap_page[]'] = json_decode(Configuration::get('STORE_GGMAP_PAGE'), true);
         $fields_value['ggmap_widget'] = '<code id="ggmap_widget">{widget name="storeggmap"}</code>';
         $fields_value['ggmap_custom'] = Configuration::get('STORE_GGMAP_CUSTOM');
-        $fields_value['ggmap_search'] = Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true);
+        $fields_value['ggmap_search'] = (int)Configuration::get('STORE_GGMAP_SEARCH', null, null, null, true);
+        $fields_value['ggmap_admin_order'] = (int)Configuration::get('STORE_GGMAP_ADMIN_ORDER');
+        $fields_value['ggmap_admin_order_address_choice'] = (int)Configuration::get('STORE_GGMAP_ADMIN_ORDER_ADDRESS_CHOICE');
 
         return $fields_value;
     }
 
     public function hookActionAdminControllerSetMedia()
     {
-        if ('AdminModules' != $this->context->controller->controller_name
-            || $this->name != Tools::getValue('configure')) {
+        if (
+            ('AdminModules' != $this->context->controller->controller_name
+            || $this->name != Tools::getValue('configure'))
+            && ('AdminOrders' != $this->context->controller->controller_name)
+            ) {
             return;
         }
 
@@ -469,6 +527,13 @@ class Storeggmap extends Module implements WidgetInterface
         $this->context->controller->addCSS($this->cssPath . 'back.css');
 
         ## js
+        $fileToLoad = 'back.js';
+        if('AdminOrders' == $this->context->controller->controller_name)
+        {
+            $fileToLoad = 'adminOrders.js';
+        }
+        
+        
         Media::addJsDef([
             'storeGgMmapSettings' => $this->getMapSettings()
         ]);
@@ -476,7 +541,7 @@ class Storeggmap extends Module implements WidgetInterface
         $this->context->controller->addJS([
             $this->getApiUrl(),
             $this->jsPath . 'classes/StoreGgMap.js',
-            $this->jsPath . 'back.js'
+            $this->jsPath . $fileToLoad
         ]);
     }
 
@@ -544,6 +609,85 @@ class Storeggmap extends Module implements WidgetInterface
         );
     }
 
+    
+    public function hookDisplayAdminOrderSide($params)
+    {
+        $showingAdminOrderMap = (int)Configuration::get('STORE_GGMAP_ADMIN_ORDER');
+        if(!$showingAdminOrderMap)
+        {
+            return;
+        }
+        
+        $coordinate = new stdClass();
+        $coordinate->lng = null;
+        $coordinate->lat = null;
+        
+        if('AdminOrders' == $this->context->controller->controller_name)
+        {
+            $order = new Order((int) $params['id_order']);
+            
+            $id_address = $order->id_address_delivery;
+            if(static::$ADDRESS_INVOICE_CHOICE == (int)Configuration::get('STORE_GGMAP_ADMIN_ORDER_ADDRESS_CHOICE'))
+            {
+                $id_address = $order->id_address_invoice;
+            }
+            
+            if($id_address)
+            {
+                $address = new Address($id_address);
+                $coordinateFromApi = $this->getCoordinateByAddress($address);
+                if($coordinateFromApi)
+                {
+                    $coordinate = $coordinateFromApi;
+                }
+            }           
+        }
+        
+        $this->smarty->assign([
+            'storeGgMapOrderAddressCoordinate' => $coordinate
+        ]);
+        
+        return $this->fetch('module:storeggmap/views/templates/hook/admin_order_side.tpl', $this->getCacheId('storeggmap'));
+    }
+    
+    private function getCoordinateByAddress(Address $address)
+    {
+        if(!$address)
+        {
+            return false;
+        }
+        $addressLiteral = [$address->address1];
+        $addressLiteral[] = $address->address2;
+        $addressLiteral[] = $address->postcode;
+        $addressLiteral[] = $address->city;
+        $addressLiteral[] = $address->country;
+        if($address->id_state){
+            $addressLiteral[] = State::getNameById($address->id_state);
+        }
+        
+        $query = [
+            'address' => urlencode(implode(' ',$addressLiteral)),
+            'key' => Configuration::get('STORE_GGMAP_APIKEY')
+        ];
+        $params = '?' . http_build_query($query);
+        
+        $fullUrl = 'https://maps.googleapis.com/maps/api/geocode/json'.$params;
+        
+        $data = Tools::file_get_contents($fullUrl);
+        if(!$data)
+        {
+            return false;
+        }
+        
+        $data = json_decode($data);
+        if($data->status !== 'OK')
+        {
+            return false;
+        }
+        
+        return $data->results[0]->geometry->location;
+    }
+    
     private function getApiUrl($withSearch = false)
     {
         $params = '';
