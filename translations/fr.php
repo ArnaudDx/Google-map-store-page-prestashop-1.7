@@ -49,6 +49,10 @@ $_MODULE['<{storeggmap}prestashop>storeggmap_cfab0c832d8feb946faf496ca3d950c4'] 
 $_MODULE['<{storeggmap}prestashop>storeggmap_0ee8f5b4c0f620a143d2d5d86c212486'] = 'Aucune clé api enregistrée';
 $_MODULE['<{storeggmap}prestashop>storeggmap_2fe9aa2f772aff76630bc504784a5c9c'] = 'N.B : Si la carte ne s\'affiche pas, veuillez d\'abord vider le cache (Paramètres avancés > Performances), puis vérifier la configuration du module.';
 $_MODULE['<{storeggmap}prestashop>storeggmap_805cfcf32d151deee484a0c195644099'] = 'Activer la recherche';
+$_MODULE['<{storeggmap}prestashop>storeggmap_d89bc025d1df98a5efcd8d00f3132ec1'] = 'Activer la carte dans la page de détail de la commande';
+$_MODULE['<{storeggmap}prestashop>storeggmap_9f827670a819ff7a3159b441e6620c55'] = 'Quelle adresse de commande doit être utilisée pour afficher la carte ?';
+$_MODULE['<{storeggmap}prestashop>storeggmap_065ab3a28ca4f16f55f103adc7d0226f'] = 'Livraison';
+$_MODULE['<{storeggmap}prestashop>storeggmap_466eadd40b3c10580e3ab4e8061161ce'] = 'Facture';
 $_MODULE['<{storeggmap}prestashop>storeggmap_detail_6b1ddf471e23a32b3d3de4fadc465188'] = 'Nos horaires';
 $_MODULE['<{storeggmap}prestashop>storeggmap_detail_673ae02fffb72f0fe68a66f096a01347'] = 'Téléphone :';
 $_MODULE['<{storeggmap}prestashop>storeggmap_detail_0e2fb5b02182fd28b9b96e86ed27838f'] = 'Fax :';
