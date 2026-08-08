@@ -2,9 +2,9 @@
 <h2>About</h2>
 <p>Display a google map block fill with your store list.</p>
 <p>Front Office view</p>
-<img src="https://www.prestashop.com/forums/uploads/monthly_2021_04/frontoffice.png.63fc2be0842258d5f38f6cc4c937e955.png"/>
+<img src="./_docs/front.gif"/>
 <p>Back Office view</p>
-<img src="https://www.prestashop.com/forums/uploads/monthly_2021_04/backoffice.png.890d0e334478759e45a642ce6ee574d9.png"/>
+<img src="_docs/back.gif"/>
 <h3>Installation</h3>
 <ol>
 <li>Download the module zip from latest releases</li>
