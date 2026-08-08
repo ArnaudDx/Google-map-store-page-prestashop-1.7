@@ -66,7 +66,7 @@ class Storeggmap extends Module implements WidgetInterface
         $this->displayName = $this->l('Show your stores on a google map');
         $this->description = $this->l('Add Google map on the store page');
 
-        $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => '9.99.99');
 
         $this->templateFile = 'module:storeggmap/views/templates/hook/storeggmap.tpl';
         $this->templateDetailFile = 'module:storeggmap/views/templates/front/storeggmap_detail.tpl';
