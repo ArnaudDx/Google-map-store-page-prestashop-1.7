@@ -10,6 +10,7 @@ class StoreGgMap {
         this.defaultZoom = settings.defaultZoom
         this.designCustomization = settings.designCustomization
         this.searchEnable = settings.searchEnable
+        this.searchErrorMessage = settings.searchErrorMessage
         this.idLang = settings.id_lang
         this.infowindow = null
         this.ratioRadiusZoom = {
@@ -105,7 +106,7 @@ class StoreGgMap {
     initSearch() {
         const locationInput = document.getElementById("location_input")
         const locationOptions = {
-            fields: ["geometry"],
+            fields: ["geometry", "name"],
             origin: this.map.getCenter()
         }
         const locationAutocomplete = new google.maps.places.Autocomplete(
@@ -118,7 +119,7 @@ class StoreGgMap {
             const place = locationAutocomplete.getPlace()
 
             if (!place.geometry || !place.geometry.location) {
-                window.alert(no_data_address_message + " '" + place.name + "'")
+                window.alert(this.searchErrorMessage + " '" + (place.name || locationInput.value) + "'")
                 return
             }
 
