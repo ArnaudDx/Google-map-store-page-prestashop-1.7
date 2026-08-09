@@ -45,10 +45,21 @@ class StoreGgMap {
             longitude: this.defaultLongitude
         })
 
+        const latInput = document.getElementById("ggmap_lat")
+        const lngInput = document.getElementById("ggmap_long")
+
+        /**
+         Ces champs appartiennent au formulaire de configuration du module.
+         Sur la fiche commande ils n'existent pas : la carte y reste en lecture seule.
+         */
+        if (!latInput || !lngInput) {
+            return
+        }
+
         this.map.addListener('dblclick', (event) => {
             this.hideMarkers()
-            document.getElementById("ggmap_lat").value = event.latLng.lat()
-            document.getElementById("ggmap_long").value = event.latLng.lng()
+            latInput.value = event.latLng.lat()
+            lngInput.value = event.latLng.lng()
             this.addMarker({
                 latitude: event.latLng.lat(),
                 longitude: event.latLng.lng()
