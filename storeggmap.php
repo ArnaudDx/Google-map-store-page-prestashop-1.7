@@ -1,29 +1,11 @@
 <?php
-/*
-* 2007-2023 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author Arnaud Drieux <contact@awb-dsgn.com>
-*  @copyright  2007-2024 awb-dsgn.com
-
-*  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
+/**
+ * storeggmap - Show your stores on a Google Map
+ *
+ * @author    Arnaud Drieux <contact@awb-dsgn.com>
+ * @copyright 2026 awb-dsgn.com
+ * @license   https://opensource.org/licenses/AFL-3.0 AFL-3.0
+ */
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -57,7 +39,7 @@ class Storeggmap extends Module implements WidgetInterface
     {
         $this->name = 'storeggmap';
         $this->author = 'Arnaud Drieux';
-        $this->version = '2.1.0';
+        $this->version = '2.1.1';
         $this->need_instance = 0;
 
         $this->bootstrap = true;
@@ -66,7 +48,7 @@ class Storeggmap extends Module implements WidgetInterface
         $this->displayName = $this->l('Show your stores on a google map');
         $this->description = $this->l('Add Google map on the store page');
 
-        $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => '9.99.99');
+        $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => '8.99.99');
 
         $this->templateFile = 'module:storeggmap/views/templates/hook/storeggmap.tpl';
         $this->templateDetailFile = 'module:storeggmap/views/templates/front/storeggmap_detail.tpl';
@@ -618,44 +600,46 @@ class Storeggmap extends Module implements WidgetInterface
             return;
         }
         
-        $coordinate = new stdClass();
-        $coordinate->lng = null;
-        $coordinate->lat = null;
-        
+        $addressLiteral = '';
+
         if('AdminOrders' == $this->context->controller->controller_name)
         {
             $order = new Order((int) $params['id_order']);
-            
+
             $id_address = $order->id_address_delivery;
             if(static::$ADDRESS_INVOICE_CHOICE == (int)Configuration::get('STORE_GGMAP_ADMIN_ORDER_ADDRESS_CHOICE'))
             {
                 $id_address = $order->id_address_invoice;
             }
-            
+
             if($id_address)
             {
-                $address = new Address($id_address);
-                $coordinateFromApi = $this->getCoordinateByAddress($address);
-                if($coordinateFromApi)
-                {
-                    $coordinate = $coordinateFromApi;
-                }
-            }           
+                $addressLiteral = $this->getAddressLiteral(new Address($id_address));
+            }
         }
-        
+
         $this->smarty->assign([
-            'storeGgMapOrderAddressCoordinate' => $coordinate
+            'storeGgMapOrderAddress' => $addressLiteral
         ]);
-        
-        return $this->fetch('module:storeggmap/views/templates/hook/admin_order_side.tpl', $this->getCacheId('storeggmap'));
+
+        ## Pas de cache : le rendu depend de la commande affichee, un id de cache
+        ## constant servirait l'adresse de la premiere commande a toutes les autres.
+        return $this->fetch('module:storeggmap/views/templates/hook/admin_order_side.tpl');
     }
-    
-    private function getCoordinateByAddress(Address $address)
+
+    /**
+     * Assemble l'adresse sur une ligne, telle qu'elle sera envoyee au geocodeur.
+     * Le geocodage lui-meme se fait dans le navigateur (views/js/adminOrders.js) :
+     * une cle Maps restreinte par referent HTTP est refusee par le web service
+     * Geocoding, qui est appele sans referent depuis le serveur.
+     */
+    private function getAddressLiteral(Address $address)
     {
-        if(!$address)
+        if(!$address->id)
         {
-            return false;
+            return '';
         }
+
         $addressLiteral = [$address->address1];
         $addressLiteral[] = $address->address2;
         $addressLiteral[] = $address->postcode;
@@ -664,28 +648,8 @@ class Storeggmap extends Module implements WidgetInterface
         if($address->id_state){
             $addressLiteral[] = State::getNameById($address->id_state);
         }
-        
-        $query = [
-            'address' => urlencode(implode(' ',$addressLiteral)),
-            'key' => Configuration::get('STORE_GGMAP_APIKEY')
-        ];
-        $params = '?' . http_build_query($query);
-        
-        $fullUrl = 'https://maps.googleapis.com/maps/api/geocode/json'.$params;
-        
-        $data = Tools::file_get_contents($fullUrl);
-        if(!$data)
-        {
-            return false;
-        }
-        
-        $data = json_decode($data);
-        if($data->status !== 'OK')
-        {
-            return false;
-        }
-        
-        return $data->results[0]->geometry->location;
+
+        return trim(implode(' ', array_filter($addressLiteral)));
     }
     
     private function getApiUrl($withSearch = false)

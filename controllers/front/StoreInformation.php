@@ -127,13 +127,17 @@ class StoreggmapStoreInformationModuleFrontController extends ModuleFrontControl
     private function searchStoreByRadius()
     {
         $radius = (int)Tools::getValue('radius', 15);
-        $lat = (float)Tools::getValue('lat', null);
-        $lng = (float)Tools::getValue('lng', null);
-        
-        if (empty($lat) || empty($lng)) {
+        $lat = Tools::getValue('lat');
+        $lng = Tools::getValue('lng');
+
+        ## empty() rejetterait la latitude 0 (equateur) et la longitude 0 (meridien de Greenwich)
+        if (!is_numeric($lat) || !is_numeric($lng)) {
             return [];
         }
-        
+
+        $lat = (float)$lat;
+        $lng = (float)$lng;
+
         $distance_unit = Configuration::get('PS_DISTANCE_UNIT');
         if (!in_array($distance_unit, ['km', 'mi'])) {
             $distance_unit = 'km';
@@ -144,17 +148,20 @@ class StoreggmapStoreInformationModuleFrontController extends ModuleFrontControl
         $stores = Db::getInstance()->executeS('SELECT s.id_store,
                                                 (' . (int)$multiplicator . '
                                                     * acos(
-                                                        cos(radians(' . (float)$lat . '))
-                                                        * cos(radians(latitude))
-                                                        * cos(radians(longitude) - radians(' . (float)$lng . '))
-                                                        + sin(radians(' . (float)$lat . '))
-                                                        * sin(radians(latitude))
+                                                        LEAST(1,
+                                                            cos(radians(' . (float)$lat . '))
+                                                            * cos(radians(s.latitude))
+                                                            * cos(radians(s.longitude) - radians(' . (float)$lng . '))
+                                                            + sin(radians(' . (float)$lat . '))
+                                                            * sin(radians(s.latitude))
+                                                        )
                                                     )
                                                 ) distance
                                                 FROM ' . _DB_PREFIX_ . 'store s
                                                 ' . Shop::addSqlAssociation('store', 's') . '
                                                 WHERE s.active = 1
-                                                HAVING CAST(distance AS UNSIGNED) > ' . (int)$radius . '
+                                                AND (s.latitude != 0 OR s.longitude != 0)
+                                                HAVING distance <= ' . (int)$radius . '
                                                 ORDER BY distance ASC');
         if (!empty($stores)) {
             $stores = array_column($stores, 'id_store');

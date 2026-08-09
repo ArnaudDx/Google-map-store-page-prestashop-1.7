@@ -10,6 +10,7 @@ class StoreGgMap {
         this.defaultZoom = settings.defaultZoom
         this.designCustomization = settings.designCustomization
         this.searchEnable = settings.searchEnable
+        this.searchErrorMessage = settings.searchErrorMessage
         this.idLang = settings.id_lang
         this.infowindow = null
         this.ratioRadiusZoom = {
@@ -44,10 +45,21 @@ class StoreGgMap {
             longitude: this.defaultLongitude
         })
 
+        const latInput = document.getElementById("ggmap_lat")
+        const lngInput = document.getElementById("ggmap_long")
+
+        /**
+         Ces champs appartiennent au formulaire de configuration du module.
+         Sur la fiche commande ils n'existent pas : la carte y reste en lecture seule.
+         */
+        if (!latInput || !lngInput) {
+            return
+        }
+
         this.map.addListener('dblclick', (event) => {
             this.hideMarkers()
-            document.getElementById("ggmap_lat").value = event.latLng.lat()
-            document.getElementById("ggmap_long").value = event.latLng.lng()
+            latInput.value = event.latLng.lat()
+            lngInput.value = event.latLng.lng()
             this.addMarker({
                 latitude: event.latLng.lat(),
                 longitude: event.latLng.lng()
@@ -105,7 +117,7 @@ class StoreGgMap {
     initSearch() {
         const locationInput = document.getElementById("location_input")
         const locationOptions = {
-            fields: ["geometry"],
+            fields: ["geometry", "name"],
             origin: this.map.getCenter()
         }
         const locationAutocomplete = new google.maps.places.Autocomplete(
@@ -118,7 +130,7 @@ class StoreGgMap {
             const place = locationAutocomplete.getPlace()
 
             if (!place.geometry || !place.geometry.location) {
-                window.alert(no_data_address_message + " '" + place.name + "'")
+                window.alert(this.searchErrorMessage + " '" + (place.name || locationInput.value) + "'")
                 return
             }
 

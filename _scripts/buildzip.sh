@@ -26,8 +26,17 @@ trap 'rm -rf "$BUILD_ROOT"' EXIT
 BUILD_DIR="$BUILD_ROOT/$MODULE_NAME"
 mkdir -p "$BUILD_DIR"
 
+# Fichiers suivis par git mais sans utilite dans un module installe en production :
+# doc interne, outillage de release et archives des versions precedentes.
+EXCLUDES=(
+    ':(exclude)CLAUDE.md'
+    ':(exclude).gitignore'
+    ':(exclude)_scripts/'
+    ':(exclude)_versions/'
+)
+
 cd "$MODULE_DIR"
-git ls-files -z | xargs -0 -I{} sh -c 'mkdir -p "$1/$(dirname "$2")" && cp "$2" "$1/$2"' _ "$BUILD_DIR" {}
+git ls-files -z -- "${EXCLUDES[@]}" | xargs -0 -I{} sh -c 'mkdir -p "$1/$(dirname "$2")" && cp "$2" "$1/$2"' _ "$BUILD_DIR" {}
 
 mkdir -p "$OUTPUT_DIR"
 
